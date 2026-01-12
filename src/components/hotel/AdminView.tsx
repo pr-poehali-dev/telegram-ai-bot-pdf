@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Document } from './types';
 
@@ -7,9 +8,10 @@ interface AdminViewProps {
   documents: Document[];
   isLoading: boolean;
   onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onDeleteDocument: (documentId: number) => void;
 }
 
-const AdminView = ({ documents, isLoading, onFileUpload }: AdminViewProps) => {
+const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: AdminViewProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -147,6 +149,14 @@ const AdminView = ({ documents, isLoading, onFileUpload }: AdminViewProps) => {
                             <span className="text-xs text-slate-600">{doc.size}</span>
                           </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => onDeleteDocument(doc.id)}
+                        >
+                          <Icon name="Trash2" size={16} />
+                        </Button>
                       </div>
                     </div>
                   ))}

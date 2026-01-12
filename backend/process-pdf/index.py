@@ -31,6 +31,7 @@ def handler(event: dict, context) -> dict:
 
     try:
         import PyPDF2
+        from openai import OpenAI
         
         body = json.loads(event.get('body', '{}'))
         document_id = body.get('documentId')
@@ -46,7 +47,7 @@ def handler(event: dict, context) -> dict:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
-        cur.execute("SELECT file_key FROM documents WHERE id = %s", (document_id,))
+        cur.execute("SELECT file_key FROM t_p56134400_telegram_ai_bot_pdf.documents WHERE id = %s", (document_id,))
         result = cur.fetchone()
         
         if not result:
@@ -84,14 +85,31 @@ def handler(event: dict, context) -> dict:
             if chunk.strip():
                 chunks.append(chunk)
 
+        client = OpenAI(
+            api_key=os.environ.get('DEEPSEEK_API_KEY'),
+            base_url="https://api.deepseek.com"
+        )
+
         for idx, chunk_text in enumerate(chunks):
+            try:
+                embedding_response = client.embeddings.create(
+                    model="text-embedding-3-small",
+                    input=chunk_text
+                )
+                embedding_vector = embedding_response.data[0].embedding
+                embedding_json = json.dumps(embedding_vector)
+            except Exception as emb_error:
+                print(f"Embedding error for chunk {idx}: {emb_error}")
+                embedding_json = None
+
             cur.execute("""
-                INSERT INTO document_chunks (document_id, chunk_text, chunk_index)
-                VALUES (%s, %s, %s)
-            """, (document_id, chunk_text, idx))
+                INSERT INTO t_p56134400_telegram_ai_bot_pdf.document_chunks 
+                (document_id, chunk_text, chunk_index, embedding_text)
+                VALUES (%s, %s, %s, %s)
+            """, (document_id, chunk_text, idx, embedding_json))
 
         cur.execute("""
-            UPDATE documents 
+            UPDATE t_p56134400_telegram_ai_bot_pdf.documents 
             SET status = 'ready', pages = %s, processed_at = %s
             WHERE id = %s
         """, (pages_count, datetime.now(), document_id))

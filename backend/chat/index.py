@@ -45,24 +45,61 @@ def handler(event: dict, context) -> dict:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
 
-        cur.execute("""
-            SELECT chunk_text FROM document_chunks 
-            ORDER BY id DESC 
-            LIMIT 5
-        """)
-        chunks = cur.fetchall()
-        context = "\n\n".join([chunk[0] for chunk in chunks]) if chunks else ""
-
-        cur.execute("""
-            INSERT INTO chat_messages (session_id, role, content)
-            VALUES (%s, %s, %s)
-        """, (session_id, 'user', user_message))
-        conn.commit()
-
         client = OpenAI(
             api_key=os.environ.get('DEEPSEEK_API_KEY'),
             base_url="https://api.deepseek.com"
         )
+
+        try:
+            query_embedding_response = client.embeddings.create(
+                model="text-embedding-3-small",
+                input=user_message
+            )
+            query_embedding = query_embedding_response.data[0].embedding
+            query_embedding_json = json.dumps(query_embedding)
+
+            cur.execute("""
+                SELECT chunk_text, embedding_text FROM t_p56134400_telegram_ai_bot_pdf.document_chunks 
+                WHERE embedding_text IS NOT NULL
+            """)
+            all_chunks = cur.fetchall()
+
+            if all_chunks:
+                def cosine_similarity(vec1, vec2):
+                    import math
+                    dot_product = sum(a * b for a, b in zip(vec1, vec2))
+                    magnitude1 = math.sqrt(sum(a * a for a in vec1))
+                    magnitude2 = math.sqrt(sum(b * b for b in vec2))
+                    if magnitude1 == 0 or magnitude2 == 0:
+                        return 0
+                    return dot_product / (magnitude1 * magnitude2)
+
+                scored_chunks = []
+                for chunk_text, embedding_text in all_chunks:
+                    chunk_embedding = json.loads(embedding_text)
+                    similarity = cosine_similarity(query_embedding, chunk_embedding)
+                    scored_chunks.append((chunk_text, similarity))
+
+                scored_chunks.sort(key=lambda x: x[1], reverse=True)
+                top_chunks = scored_chunks[:3]
+                context = "\n\n".join([chunk[0] for chunk in top_chunks])
+            else:
+                context = ""
+        except Exception as emb_error:
+            print(f"Embedding search error: {emb_error}")
+            cur.execute("""
+                SELECT chunk_text FROM t_p56134400_telegram_ai_bot_pdf.document_chunks 
+                ORDER BY id DESC 
+                LIMIT 3
+            """)
+            chunks = cur.fetchall()
+            context = "\n\n".join([chunk[0] for chunk in chunks]) if chunks else ""
+
+        cur.execute("""
+            INSERT INTO t_p56134400_telegram_ai_bot_pdf.chat_messages (session_id, role, content)
+            VALUES (%s, %s, %s)
+        """, (session_id, 'user', user_message))
+        conn.commit()
         
         system_prompt = f"""Ты виртуальный консьерж отеля. Отвечай доброжелательно и профессионально.
 Используй информацию из документов отеля для ответа.
@@ -83,7 +120,7 @@ def handler(event: dict, context) -> dict:
         assistant_message = response.choices[0].message.content
 
         cur.execute("""
-            INSERT INTO chat_messages (session_id, role, content)
+            INSERT INTO t_p56134400_telegram_ai_bot_pdf.chat_messages (session_id, role, content)
             VALUES (%s, %s, %s)
         """, (session_id, 'assistant', assistant_message))
         conn.commit()

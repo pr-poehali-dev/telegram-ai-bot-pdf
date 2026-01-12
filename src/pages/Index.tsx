@@ -163,6 +163,43 @@ const Index = () => {
     setTimeout(() => handleSendMessage(), 100);
   };
 
+  const handleDeleteDocument = async (documentId: number) => {
+    if (!confirm('Удалить этот документ? Все данные будут удалены из базы знаний.')) {
+      return;
+    }
+
+    setIsLoading(true);
+    toast({ title: 'Удаление...', description: 'Удаляем документ' });
+
+    try {
+      const response = await fetch(BACKEND_URLS.deletePdf, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Удалено!',
+          description: 'Документ удалён из базы'
+        });
+        loadDocuments();
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message || 'Не удалось удалить документ',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto p-4 lg:p-8 max-w-6xl">
@@ -202,6 +239,7 @@ const Index = () => {
             documents={documents}
             isLoading={isLoading}
             onFileUpload={handleFileUpload}
+            onDeleteDocument={handleDeleteDocument}
           />
         )}
       </div>

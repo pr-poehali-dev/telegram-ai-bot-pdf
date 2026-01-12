@@ -1,0 +1,104 @@
+import json
+import os
+import psycopg2
+import boto3
+
+def handler(event: dict, context) -> dict:
+    """Удаление PDF документа и всех связанных данных"""
+    method = event.get('httpMethod', 'DELETE')
+
+    if method == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
+            'body': '',
+            'isBase64Encoded': False
+        }
+
+    if method != 'DELETE':
+        return {
+            'statusCode': 405,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
+        }
+
+    try:
+        body = json.loads(event.get('body', '{}'))
+        document_id = body.get('documentId')
+
+        if not document_id:
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'documentId required'}),
+                'isBase64Encoded': False
+            }
+
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT file_key FROM t_p56134400_telegram_ai_bot_pdf.documents 
+            WHERE id = %s
+        """, (document_id,))
+        result = cur.fetchone()
+
+        if not result:
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 404,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'Document not found'}),
+                'isBase64Encoded': False
+            }
+
+        file_key = result[0]
+
+        s3 = boto3.client('s3',
+            endpoint_url='https://bucket.poehali.dev',
+            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+        )
+
+        try:
+            s3.delete_object(Bucket='files', Key=file_key)
+        except Exception as s3_error:
+            print(f"S3 delete warning: {s3_error}")
+
+        cur.execute("""
+            DELETE FROM t_p56134400_telegram_ai_bot_pdf.document_chunks 
+            WHERE document_id = %s
+        """, (document_id,))
+
+        cur.execute("""
+            DELETE FROM t_p56134400_telegram_ai_bot_pdf.documents 
+            WHERE id = %s
+        """, (document_id,))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({
+                'success': True,
+                'message': 'Document deleted successfully'
+            }),
+            'isBase64Encoded': False
+        }
+
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
+        }
