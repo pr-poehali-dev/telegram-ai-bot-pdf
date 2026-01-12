@@ -147,8 +147,8 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-slate-900 truncate">{doc.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
+                          <p className="font-medium text-sm text-slate-900 break-words">{doc.name}</p>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-700">{doc.category}</span>
                             {doc.pages > 0 && <span className="text-xs text-slate-600">{doc.pages} стр.</span>}
                             <span className="text-xs text-slate-600">{doc.size}</span>

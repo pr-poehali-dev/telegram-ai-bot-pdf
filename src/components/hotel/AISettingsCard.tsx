@@ -72,12 +72,25 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
   };
 
   const chatModels = {
-    deepseek: ['deepseek-chat', 'deepseek-reasoner'],
-    openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo']
+    deepseek: [
+      { value: 'deepseek-chat', label: 'DeepSeek Chat' },
+      { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner' }
+    ],
+    openai: [
+      { value: 'gpt-4o', label: 'GPT-4o (новейшая)' },
+      { value: 'gpt-4o-mini', label: 'GPT-4o Mini (быстрая)' },
+      { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+      { value: 'gpt-4', label: 'GPT-4 (стабильная)' },
+      { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo (дешевая)' }
+    ]
   };
 
   const embeddingModels = {
-    openai: ['text-embedding-3-small', 'text-embedding-3-large', 'text-embedding-ada-002']
+    openai: [
+      { value: 'text-embedding-3-small', label: 'Text Embedding 3 Small (дешевая)' },
+      { value: 'text-embedding-3-large', label: 'Text Embedding 3 Large (точная)' },
+      { value: 'text-embedding-ada-002', label: 'Ada 002 (старая)' }
+    ]
   };
 
   return (
@@ -101,7 +114,7 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
                 setSettings({
                   ...settings,
                   chat_provider: value,
-                  chat_model: chatModels[value as keyof typeof chatModels][0]
+                  chat_model: chatModels[value as keyof typeof chatModels][0].value
                 });
               }}
             >
@@ -128,8 +141,8 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
               </SelectTrigger>
               <SelectContent>
                 {chatModels[settings.chat_provider as keyof typeof chatModels].map((model) => (
-                  <SelectItem key={model} value={model}>
-                    {model}
+                  <SelectItem key={model.value} value={model.value}>
+                    {model.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -146,7 +159,7 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
                 setSettings({
                   ...settings,
                   embedding_provider: value,
-                  embedding_model: embeddingModels[value as keyof typeof embeddingModels][0]
+                  embedding_model: embeddingModels[value as keyof typeof embeddingModels][0].value
                 });
               }}
             >
@@ -172,8 +185,8 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
               </SelectTrigger>
               <SelectContent>
                 {embeddingModels[settings.embedding_provider as keyof typeof embeddingModels].map((model) => (
-                  <SelectItem key={model} value={model}>
-                    {model}
+                  <SelectItem key={model.value} value={model.value}>
+                    {model.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -208,7 +221,8 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
               <p className="font-medium text-blue-900">Рекомендации:</p>
               <ul className="text-blue-800 mt-2 space-y-1 list-disc list-inside">
                 <li>DeepSeek в 50 раз дешевле OpenAI</li>
-                <li>OpenAI — качественнее для сложных запросов</li>
+                <li>GPT-4o — новейшая модель OpenAI</li>
+                <li>GPT-4o Mini — быстрая и дешевая</li>
                 <li>Эмбеддинги только через OpenAI</li>
               </ul>
             </div>
