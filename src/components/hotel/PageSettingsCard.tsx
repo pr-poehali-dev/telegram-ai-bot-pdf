@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
+import IconPicker from './IconPicker';
 import { useToast } from '@/hooks/use-toast';
 import { BACKEND_URLS, PageSettings, QuickQuestion } from './types';
 
@@ -209,18 +210,18 @@ const PageSettingsCard = () => {
             <div className="space-y-2">
               {quickQuestions.map((q, idx) => (
                 <div key={idx} className="border rounded-lg p-3 space-y-2 bg-slate-50">
-                  <div className="grid grid-cols-[1fr_100px_40px] gap-2">
+                  <div className="grid grid-cols-[1fr_auto_40px] gap-2">
                     <Input
                       placeholder="Текст кнопки"
                       value={q.text}
                       onChange={(e) => handleUpdateQuestion(idx, 'text', e.target.value)}
                     />
-                    <Input
-                      placeholder="Иконка"
-                      value={q.icon}
-                      onChange={(e) => handleUpdateQuestion(idx, 'icon', e.target.value)}
-                      className="text-sm"
-                    />
+                    <div className="w-[180px]">
+                      <IconPicker
+                        value={q.icon}
+                        onChange={(value) => handleUpdateQuestion(idx, 'icon', value)}
+                      />
+                    </div>
                     <Button
                       onClick={() => handleRemoveQuestion(idx)}
                       size="icon"
@@ -238,9 +239,6 @@ const PageSettingsCard = () => {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-500 mt-2">
-              Иконки из библиотеки lucide-react: Hotel, Sparkles, Coffee, Waves, Phone, etc.
-            </p>
           </div>
 
           <div>

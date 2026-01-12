@@ -37,6 +37,7 @@ def handler(event: dict, context) -> dict:
             button_color_end = %s,
             button_size = %s,
             button_position = %s,
+            button_icon = %s,
             window_width = %s,
             window_height = %s,
             header_title = %s,
@@ -49,15 +50,16 @@ def handler(event: dict, context) -> dict:
             updated_at = NOW()
         WHERE id = 1
     """, (
-        data.get('button_color', '#667eea'),
-        data.get('button_color_end', '#764ba2'),
+        data.get('button_color', '#3b82f6'),
+        data.get('button_color_end', '#1d4ed8'),
         data.get('button_size', 60),
         data.get('button_position', 'bottom-right'),
+        data.get('button_icon', 'MessageCircle'),
         data.get('window_width', 380),
         data.get('window_height', 600),
         data.get('header_title', 'AI Ассистент'),
-        data.get('header_color', '#667eea'),
-        data.get('header_color_end', '#764ba2'),
+        data.get('header_color', '#3b82f6'),
+        data.get('header_color_end', '#1d4ed8'),
         data.get('border_radius', 16),
         data.get('show_branding', True),
         data.get('custom_css'),

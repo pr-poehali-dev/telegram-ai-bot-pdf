@@ -23,7 +23,7 @@ def handler(event: dict, context) -> dict:
     cur = conn.cursor()
     
     cur.execute("""
-        SELECT button_color, button_color_end, button_size, button_position,
+        SELECT button_color, button_color_end, button_size, button_position, button_icon,
                window_width, window_height, header_title, header_color, 
                header_color_end, border_radius, show_branding, custom_css, chat_url
         FROM t_p56134400_telegram_ai_bot_pdf.widget_settings
@@ -40,27 +40,29 @@ def handler(event: dict, context) -> dict:
             'button_color_end': result[1],
             'button_size': result[2],
             'button_position': result[3],
-            'window_width': result[4],
-            'window_height': result[5],
-            'header_title': result[6],
-            'header_color': result[7],
-            'header_color_end': result[8],
-            'border_radius': result[9],
-            'show_branding': result[10],
-            'custom_css': result[11],
-            'chat_url': result[12]
+            'button_icon': result[4],
+            'window_width': result[5],
+            'window_height': result[6],
+            'header_title': result[7],
+            'header_color': result[8],
+            'header_color_end': result[9],
+            'border_radius': result[10],
+            'show_branding': result[11],
+            'custom_css': result[12],
+            'chat_url': result[13]
         }
     else:
         settings = {
-            'button_color': '#667eea',
-            'button_color_end': '#764ba2',
+            'button_color': '#3b82f6',
+            'button_color_end': '#1d4ed8',
             'button_size': 60,
             'button_position': 'bottom-right',
+            'button_icon': 'MessageCircle',
             'window_width': 380,
             'window_height': 600,
             'header_title': 'AI Ассистент',
-            'header_color': '#667eea',
-            'header_color_end': '#764ba2',
+            'header_color': '#3b82f6',
+            'header_color_end': '#1d4ed8',
             'border_radius': 16,
             'show_branding': True,
             'custom_css': None,
