@@ -12,6 +12,7 @@ import { BACKEND_URLS } from './types';
 import { COLOR_SCHEMES, WidgetSettings, applyColorScheme } from './WidgetColorSchemes';
 import WidgetPreview from './WidgetPreview';
 import WidgetCodeGenerator from './WidgetCodeGenerator';
+import { authenticatedFetch, getTenantId } from '@/lib/auth';
 
 const WidgetSettingsCard = () => {
   const { toast } = useToast();
@@ -41,7 +42,9 @@ const WidgetSettingsCard = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.getWidgetSettings);
+      const tenantId = getTenantId();
+      const url = tenantId ? `${BACKEND_URLS.getWidgetSettings}?tenant_id=${tenantId}` : BACKEND_URLS.getWidgetSettings;
+      const response = await authenticatedFetch(url);
       const data = await response.json();
       if (!data.button_icon) {
         data.button_icon = 'MessageCircle';
@@ -61,7 +64,7 @@ const WidgetSettingsCard = () => {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(BACKEND_URLS.updateWidgetSettings, {
+      const response = await authenticatedFetch(BACKEND_URLS.updateWidgetSettings, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)
@@ -70,7 +73,9 @@ const WidgetSettingsCard = () => {
       if (response.ok) {
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        const verifyResponse = await fetch(BACKEND_URLS.getWidgetSettings);
+        const tenantId = getTenantId();
+        const verifyUrl = tenantId ? `${BACKEND_URLS.getWidgetSettings}?tenant_id=${tenantId}` : BACKEND_URLS.getWidgetSettings;
+        const verifyResponse = await authenticatedFetch(verifyUrl);
         const verifyData = await verifyResponse.json();
         
         const savedCorrectly = 

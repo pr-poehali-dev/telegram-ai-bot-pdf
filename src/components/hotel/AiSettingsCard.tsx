@@ -8,6 +8,7 @@ import { BACKEND_URLS, AI_MODELS, DEFAULT_AI_SETTINGS, AiModelSettings } from '.
 import Icon from '@/components/ui/icon';
 import { AI_PRESETS } from './AiSettingsPresets';
 import AiSettingsSliders from './AiSettingsSliders';
+import { authenticatedFetch, getTenantId } from '@/lib/auth';
 
 const AiSettingsCard = () => {
   const [selectedModel, setSelectedModel] = useState<string>('yandexgpt');
@@ -22,7 +23,9 @@ const AiSettingsCard = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.getAiSettings);
+      const tenantId = getTenantId();
+      const url = tenantId ? `${BACKEND_URLS.getAiSettings}?tenant_id=${tenantId}` : BACKEND_URLS.getAiSettings;
+      const response = await authenticatedFetch(url);
       const data = await response.json();
       if (data.settings) {
         setSelectedModel(data.settings.model);
@@ -63,7 +66,7 @@ const AiSettingsCard = () => {
   const handleSaveSettings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(BACKEND_URLS.updateAiSettings, {
+      const response = await authenticatedFetch(BACKEND_URLS.updateAiSettings, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings })

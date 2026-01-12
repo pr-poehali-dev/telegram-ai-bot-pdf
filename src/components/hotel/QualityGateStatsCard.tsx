@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Icon from '@/components/ui/icon';
 import { BACKEND_URLS } from './types';
+import { authenticatedFetch, getTenantId } from '@/lib/auth';
 
 interface GateLog {
   id: number;
@@ -43,7 +44,9 @@ const QualityGateStatsCard = () => {
 
   const loadStats = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.getQualityGateStats);
+      const tenantId = getTenantId();
+      const url = tenantId ? `${BACKEND_URLS.getQualityGateStats}?tenant_id=${tenantId}` : BACKEND_URLS.getQualityGateStats;
+      const response = await authenticatedFetch(url);
       const data = await response.json();
       setStats(data.stats);
       setRecentLogs(data.recent_logs || []);

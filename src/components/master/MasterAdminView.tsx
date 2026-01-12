@@ -11,6 +11,7 @@ import MasterDashboardStats from './MasterDashboardStats';
 import VersionsList from './VersionsList';
 import BulkUpdatePanel from './BulkUpdatePanel';
 import TenantsListTable from './TenantsListTable';
+import AdminUsersPanel from './AdminUsersPanel';
 
 interface Tenant {
   id: number;
@@ -337,6 +338,8 @@ const MasterAdminView = () => {
       </div>
 
       <TenantsListTable tenants={tenants} />
+
+      <AdminUsersPanel />
     </div>
   );
 };

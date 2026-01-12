@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import { authenticatedFetch } from '@/lib/auth';
 
 interface YooKassaSettingsCardProps {
   createPaymentUrl: string;
@@ -25,7 +26,7 @@ const YooKassaSettingsCard = ({ createPaymentUrl, webhookUrl }: YooKassaSettings
 
   const checkStatus = async () => {
     try {
-      const response = await fetch(createPaymentUrl, {
+      const response = await authenticatedFetch(createPaymentUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: 1, description: 'Status check' })
@@ -54,7 +55,7 @@ const YooKassaSettingsCard = ({ createPaymentUrl, webhookUrl }: YooKassaSettings
         throw new Error('Введите корректную сумму');
       }
 
-      const response = await fetch(createPaymentUrl, {
+      const response = await authenticatedFetch(createPaymentUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

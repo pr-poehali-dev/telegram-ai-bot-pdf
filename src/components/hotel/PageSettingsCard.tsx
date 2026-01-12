@@ -7,6 +7,7 @@ import Icon from '@/components/ui/icon';
 import IconPicker from './IconPicker';
 import { useToast } from '@/hooks/use-toast';
 import { BACKEND_URLS, PageSettings, QuickQuestion } from './types';
+import { authenticatedFetch, getTenantId } from '@/lib/auth';
 
 const PageSettingsCard = () => {
   const [settings, setSettings] = useState<PageSettings>({
@@ -44,7 +45,9 @@ const PageSettingsCard = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.getPageSettings);
+      const tenantId = getTenantId();
+      const url = tenantId ? `${BACKEND_URLS.getPageSettings}?tenant_id=${tenantId}` : BACKEND_URLS.getPageSettings;
+      const response = await authenticatedFetch(url);
       const data = await response.json();
       if (data.settings) {
         setSettings(data.settings);
@@ -60,7 +63,7 @@ const PageSettingsCard = () => {
   const handleSaveSettings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(BACKEND_URLS.updatePageSettings, {
+      const response = await authenticatedFetch(BACKEND_URLS.updatePageSettings, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings, quickQuestions })
@@ -71,7 +74,9 @@ const PageSettingsCard = () => {
       if (response.ok) {
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        const verifyResponse = await fetch(BACKEND_URLS.getPageSettings);
+        const tenantId = getTenantId();
+        const verifyUrl = tenantId ? `${BACKEND_URLS.getPageSettings}?tenant_id=${tenantId}` : BACKEND_URLS.getPageSettings;
+        const verifyResponse = await authenticatedFetch(verifyUrl);
         const verifyData = await verifyResponse.json();
         
         const savedCorrectly = 

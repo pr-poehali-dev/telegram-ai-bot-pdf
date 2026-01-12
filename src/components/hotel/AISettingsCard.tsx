@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import { authenticatedFetch, getTenantId } from '@/lib/auth';
 
 interface AISettings {
   chat_provider: string;
@@ -36,7 +37,9 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(getSettingsUrl);
+      const tenantId = getTenantId();
+      const url = tenantId ? `${getSettingsUrl}?tenant_id=${tenantId}` : getSettingsUrl;
+      const response = await authenticatedFetch(url);
       const data = await response.json();
       if (data.settings) {
         setSettings({
@@ -55,7 +58,7 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
   const handleSaveSettings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(updateSettingsUrl, {
+      const response = await authenticatedFetch(updateSettingsUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings })
@@ -66,7 +69,9 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
       if (response.ok) {
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        const verifyResponse = await fetch(getSettingsUrl);
+        const tenantId = getTenantId();
+        const verifyUrl = tenantId ? `${getSettingsUrl}?tenant_id=${tenantId}` : getSettingsUrl;
+        const verifyResponse = await authenticatedFetch(verifyUrl);
         const verifyData = await verifyResponse.json();
         
         const savedCorrectly = 

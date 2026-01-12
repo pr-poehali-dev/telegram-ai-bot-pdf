@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Icon from '@/components/ui/icon';
 import { BACKEND_URLS } from './types';
+import { authenticatedFetch, getTenantId } from '@/lib/auth';
 
 interface ChatStats {
   totalMessages: number;
@@ -24,7 +25,9 @@ const ChatStatsCard = () => {
 
   const loadStats = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.getChatStats);
+      const tenantId = getTenantId();
+      const url = tenantId ? `${BACKEND_URLS.getChatStats}?tenant_id=${tenantId}` : BACKEND_URLS.getChatStats;
+      const response = await authenticatedFetch(url);
       const data = await response.json();
       setStats(data);
     } catch (error) {
