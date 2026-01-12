@@ -112,7 +112,7 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
           <Icon name="Settings" size={20} />
           Настройки AI
         </CardTitle>
-        <CardDescription>Выбор провайдеров и моделей для чата и эмбеддингов</CardDescription>
+        <CardDescription>Выбор провайдеров для чата и эмбеддингов (OpenAI, DeepSeek, YandexGPT)</CardDescription>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
         <div className="space-y-4">
