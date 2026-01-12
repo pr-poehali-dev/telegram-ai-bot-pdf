@@ -99,15 +99,16 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
                   <Icon name={isLoading ? 'Loader2' : 'Upload'} size={24} className={`text-primary ${isLoading ? 'animate-spin' : ''}`} />
                 </div>
                 <p className="font-medium text-slate-900 mb-1">
-                  {isLoading ? 'Загрузка...' : 'Выберите PDF файл'}
+                  {isLoading ? 'Загрузка...' : 'Выберите PDF файлы'}
                 </p>
-                <p className="text-sm text-slate-600">или перетащите сюда</p>
+                <p className="text-sm text-slate-600">можно несколько одновременно</p>
               </div>
             </label>
             <input
               id="file-upload"
               type="file"
               accept=".pdf"
+              multiple
               className="hidden"
               onChange={onFileUpload}
               disabled={isLoading}

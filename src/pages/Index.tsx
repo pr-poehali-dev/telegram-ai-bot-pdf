@@ -91,24 +91,43 @@ const Index = () => {
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !file.name.endsWith('.pdf')) {
+    const files = event.target.files;
+    if (!files || files.length === 0) {
       toast({
         title: 'Ошибка',
-        description: 'Выберите PDF файл',
+        description: 'Выберите PDF файлы',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const pdfFiles = Array.from(files).filter(f => f.name.endsWith('.pdf'));
+    if (pdfFiles.length === 0) {
+      toast({
+        title: 'Ошибка',
+        description: 'Выберите PDF файлы',
         variant: 'destructive'
       });
       return;
     }
 
     setIsLoading(true);
-    toast({ title: 'Загрузка...', description: 'Отправляем файл' });
+    toast({ title: 'Загрузка...', description: `Загружаем ${pdfFiles.length} файл(ов)` });
 
-    try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64 = e.target?.result as string;
-        const base64Data = base64.split(',')[1];
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const file of pdfFiles) {
+      try {
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const base64 = e.target?.result as string;
+            resolve(base64.split(',')[1]);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
 
         const uploadResponse = await fetch(BACKEND_URLS.uploadPdf, {
           method: 'POST',
@@ -126,8 +145,6 @@ const Index = () => {
           throw new Error(uploadData.error);
         }
 
-        toast({ title: 'Обработка...', description: 'Извлекаем текст из PDF' });
-
         const processResponse = await fetch(BACKEND_URLS.processPdf, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -137,25 +154,39 @@ const Index = () => {
         const processData = await processResponse.json();
 
         if (processResponse.ok) {
-          toast({
-            title: 'Успешно!',
-            description: `Загружено ${processData.pages} страниц`
-          });
-          loadDocuments();
+          successCount++;
         } else {
           throw new Error(processData.error);
         }
-      };
-      reader.readAsDataURL(file);
-    } catch (error: any) {
+      } catch (error: any) {
+        console.error(`Error uploading ${file.name}:`, error);
+        errorCount++;
+      }
+    }
+
+    setIsLoading(false);
+    loadDocuments();
+
+    if (successCount > 0 && errorCount === 0) {
+      toast({
+        title: 'Успешно!',
+        description: `Загружено ${successCount} файл(ов)`
+      });
+    } else if (successCount > 0 && errorCount > 0) {
+      toast({
+        title: 'Частично загружено',
+        description: `Успешно: ${successCount}, ошибки: ${errorCount}`,
+        variant: 'default'
+      });
+    } else {
       toast({
         title: 'Ошибка',
-        description: error.message || 'Не удалось загрузить файл',
+        description: 'Не удалось загрузить файлы',
         variant: 'destructive'
       });
-    } finally {
-      setIsLoading(false);
     }
+
+    event.target.value = '';
   };
 
   const handleQuickQuestion = (question: string) => {
