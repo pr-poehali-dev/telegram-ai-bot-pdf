@@ -168,18 +168,28 @@ const VKSettingsCard = ({ webhookUrl, chatFunctionUrl }: VKSettingsCardProps) =>
           </div>
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg text-sm space-y-2">
+        <div className="bg-purple-50 p-4 rounded-lg text-sm space-y-3">
           <div className="flex items-start gap-2">
-            <Icon name="Info" size={16} className="text-blue-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-blue-900">Как подключить:</p>
-              <ol className="text-blue-800 mt-2 space-y-1 list-decimal list-inside">
-                <li>Создайте группу ВКонтакте или используйте существующую</li>
-                <li>Получите токен в разделе "Работа с API"</li>
-                <li>Включите "Callback API" в настройках сообщений</li>
-                <li>Укажите Callback API URL выше</li>
-                <li>Нажмите "Подключить бота"</li>
+            <Icon name="Info" size={16} className="text-purple-600 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-purple-900 mb-2">📋 Инструкция по подключению VK-бота:</p>
+              <ol className="text-purple-800 space-y-2 list-decimal list-inside">
+                <li className="pl-1"><strong>Создайте группу:</strong> зайдите на <a href="https://vk.com/groups" target="_blank" rel="noopener noreferrer" className="underline hover:text-purple-950">vk.com/groups</a> → "Создать сообщество" → выберите тип (Компания/Бизнес)</li>
+                <li className="pl-1"><strong>Включите сообщения:</strong> Настройки → Сообщения → включите "Сообщения сообщества"</li>
+                <li className="pl-1"><strong>Получите токен:</strong> Настройки → Работа с API → "Создать ключ доступа" → дайте права "Управление сообществом" и "Сообщения"</li>
+                <li className="pl-1"><strong>Узнайте ID группы:</strong> скопируйте цифры из адреса страницы <code className="bg-purple-100 px-1 rounded">vk.com/club123456789</code> (без минуса!)</li>
+                <li className="pl-1"><strong>Настройте Callback API:</strong> Настройки → Callback API → включите API → вставьте Callback API URL (указан выше) → подтвердите</li>
+                <li className="pl-1"><strong>Включите события:</strong> в разделе "Типы событий" отметьте <code className="bg-purple-100 px-1 rounded">message_new</code> (Новое сообщение)</li>
+                <li className="pl-1"><strong>Запустите:</strong> вставьте токен и ID группы в поля выше → нажмите "Подключить бота" → напишите сообщение группе</li>
               </ol>
+              <div className="mt-3 pt-3 border-t border-purple-200">
+                <p className="text-purple-900 font-medium mb-1">💡 Полезные ссылки:</p>
+                <ul className="text-purple-700 text-xs space-y-1">
+                  <li>• <a href="https://vk.com/groups" target="_blank" rel="noopener noreferrer" className="underline hover:text-purple-900">Создать сообщество</a> — новая группа ВК</li>
+                  <li>• <a href="https://dev.vk.com/api/callback/getting-started" target="_blank" rel="noopener noreferrer" className="underline hover:text-purple-900">Официальная документация</a> Callback API</li>
+                  <li>• <a href="https://dev.vk.com/api/bots/getting-started" target="_blank" rel="noopener noreferrer" className="underline hover:text-purple-900">Руководство</a> по ботам VK</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

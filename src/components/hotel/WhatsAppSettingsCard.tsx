@@ -221,18 +221,27 @@ const WhatsAppSettingsCard = ({ webhookUrl, chatFunctionUrl }: WhatsAppSettingsC
           </div>
         </div>
 
-        <div className="bg-green-50 p-4 rounded-lg text-sm space-y-2">
+        <div className="bg-green-50 p-4 rounded-lg text-sm space-y-3">
           <div className="flex items-start gap-2">
             <Icon name="Info" size={16} className="text-green-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-green-900">Как подключить:</p>
-              <ol className="text-green-800 mt-2 space-y-1 list-decimal list-inside">
-                <li>Создайте приложение в Meta for Developers</li>
-                <li>Настройте WhatsApp Business API</li>
-                <li>Скопируйте Phone Number ID и Access Token</li>
-                <li>Настройте Webhook URL в Meta консоли</li>
-                <li>Нажмите "Подключить бота"</li>
+            <div className="flex-1">
+              <p className="font-semibold text-green-900 mb-2">📋 Инструкция по подключению WhatsApp Business API:</p>
+              <ol className="text-green-800 space-y-2 list-decimal list-inside">
+                <li className="pl-1"><strong>Зайдите в <a href="https://developers.facebook.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-950">Meta for Developers</a>:</strong> создайте новое приложение (тип: Business)</li>
+                <li className="pl-1"><strong>Добавьте WhatsApp:</strong> в панели приложения нажмите "Add Product" → выберите "WhatsApp" → настройте профиль бизнеса</li>
+                <li className="pl-1"><strong>Получите данные:</strong> WhatsApp → API Setup → скопируйте <code className="bg-green-100 px-1 rounded">Phone Number ID</code> и <code className="bg-green-100 px-1 rounded">Access Token</code></li>
+                <li className="pl-1"><strong>Настройте Webhook:</strong> WhatsApp → Configuration → вставьте Webhook URL (указан выше) и Verify Token из секретов</li>
+                <li className="pl-1"><strong>Подпишитесь на события:</strong> включите <code className="bg-green-100 px-1 rounded">messages</code> в Webhook Fields</li>
+                <li className="pl-1"><strong>Запустите бота:</strong> вставьте Phone Number ID и Access Token в поля выше → нажмите "Подключить бота"</li>
               </ol>
+              <div className="mt-3 pt-3 border-t border-green-200">
+                <p className="text-green-900 font-medium mb-1">💡 Полезные ссылки:</p>
+                <ul className="text-green-700 text-xs space-y-1">
+                  <li>• <a href="https://developers.facebook.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-900">Meta for Developers</a> — консоль разработчика</li>
+                  <li>• <a href="https://developers.facebook.com/docs/whatsapp/cloud-api/get-started" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-900">Официальная документация</a> WhatsApp Cloud API</li>
+                  <li>• <a href="https://business.facebook.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-900">Meta Business Suite</a> — управление бизнес-аккаунтом</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

@@ -201,17 +201,25 @@ const TelegramSettingsCard = ({ webhookUrl, chatFunctionUrl }: TelegramSettingsC
           </div>
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg text-sm space-y-2">
+        <div className="bg-blue-50 p-4 rounded-lg text-sm space-y-3">
           <div className="flex items-start gap-2">
             <Icon name="Info" size={16} className="text-blue-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-blue-900">Как подключить:</p>
-              <ol className="text-blue-800 mt-2 space-y-1 list-decimal list-inside">
-                <li>Создайте бота через @BotFather</li>
-                <li>Скопируйте токен и вставьте выше</li>
-                <li>Нажмите "Подключить бота"</li>
-                <li>Готово! Напишите боту в Telegram</li>
+            <div className="flex-1">
+              <p className="font-semibold text-blue-900 mb-2">📋 Инструкция по подключению Telegram-бота:</p>
+              <ol className="text-blue-800 space-y-2 list-decimal list-inside">
+                <li className="pl-1"><strong>Создайте бота:</strong> напишите @BotFather в Telegram → отправьте команду <code className="bg-blue-100 px-1 rounded">/newbot</code> → придумайте имя и username для бота</li>
+                <li className="pl-1"><strong>Получите токен:</strong> BotFather отправит токен вида <code className="bg-blue-100 px-1 rounded">1234567890:ABCdefGHI...</code></li>
+                <li className="pl-1"><strong>Вставьте токен:</strong> скопируйте токен и вставьте в поле выше</li>
+                <li className="pl-1"><strong>Подключите:</strong> нажмите кнопку "Подключить бота" — webhook будет настроен автоматически</li>
+                <li className="pl-1"><strong>Проверьте:</strong> найдите своего бота в Telegram (по username) и напишите ему <code className="bg-blue-100 px-1 rounded">/start</code></li>
               </ol>
+              <div className="mt-3 pt-3 border-t border-blue-200">
+                <p className="text-blue-900 font-medium mb-1">💡 Полезные ссылки:</p>
+                <ul className="text-blue-700 text-xs space-y-1">
+                  <li>• <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">@BotFather</a> — создание ботов</li>
+                  <li>• <a href="https://core.telegram.org/bots#how-do-i-create-a-bot" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">Официальная документация</a> Telegram</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
