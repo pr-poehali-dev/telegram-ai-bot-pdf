@@ -69,10 +69,29 @@ const PageSettingsCard = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: 'Сохранено!',
-          description: 'Настройки страницы обновлены'
-        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const verifyResponse = await fetch(BACKEND_URLS.getPageSettings);
+        const verifyData = await verifyResponse.json();
+        
+        const savedCorrectly = 
+          verifyData.settings?.header_title === settings.header_title &&
+          verifyData.settings?.page_title === settings.page_title &&
+          verifyData.settings?.contact_phone_value === settings.contact_phone_value &&
+          verifyData.quickQuestions?.length === quickQuestions.length;
+        
+        if (savedCorrectly) {
+          toast({
+            title: '✓ Сохранено!',
+            description: 'Настройки страницы успешно обновлены и проверены в базе данных'
+          });
+        } else {
+          toast({
+            title: '⚠️ Частично сохранено',
+            description: 'Данные записаны, но проверка показала расхождения',
+            variant: 'destructive'
+          });
+        }
       } else {
         throw new Error(data.error);
       }

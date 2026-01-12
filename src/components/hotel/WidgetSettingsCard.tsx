@@ -68,10 +68,29 @@ const WidgetSettingsCard = () => {
       });
 
       if (response.ok) {
-        toast({
-          title: 'Настройки сохранены',
-          description: 'Настройки виджета успешно обновлены'
-        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const verifyResponse = await fetch(BACKEND_URLS.getWidgetSettings);
+        const verifyData = await verifyResponse.json();
+        
+        const savedCorrectly = 
+          verifyData.button_color === settings.button_color &&
+          verifyData.header_title === settings.header_title &&
+          verifyData.button_position === settings.button_position &&
+          verifyData.button_size === settings.button_size;
+        
+        if (savedCorrectly) {
+          toast({
+            title: '✓ Сохранено!',
+            description: 'Настройки виджета успешно обновлены и проверены в базе данных'
+          });
+        } else {
+          toast({
+            title: '⚠️ Частично сохранено',
+            description: 'Данные записаны, но проверка показала расхождения',
+            variant: 'destructive'
+          });
+        }
       }
     } catch (error) {
       toast({
