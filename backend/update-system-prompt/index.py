@@ -41,6 +41,8 @@ def handler(event: dict, context) -> dict:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
 
+        print(f"Updating system prompt: {new_prompt[:100]}...")
+
         cur.execute("""
             UPDATE t_p56134400_telegram_ai_bot_pdf.tenant_settings
             SET ai_settings = jsonb_set(
@@ -64,6 +66,7 @@ def handler(event: dict, context) -> dict:
         }
 
     except Exception as e:
+        print(f"Error updating prompt: {e}")
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
