@@ -12,6 +12,8 @@ import VersionsList from './VersionsList';
 import BulkUpdatePanel from './BulkUpdatePanel';
 import TenantsListTable from './TenantsListTable';
 import AdminUsersPanel from './AdminUsersPanel';
+import MessengersStatusCard from './MessengersStatusCard';
+import MessengersStatusCard from './MessengersStatusCard';
 
 interface Tenant {
   id: number;
@@ -206,6 +208,13 @@ const MasterAdminView = () => {
           <p className="text-slate-600">Управление AI чат-ботами</p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => window.open('https://docs.google.com/document/d/1wBzrp-6JvCUFMwI04m44fmaqb_x6Og1t3bPVdP-Bfds/edit?usp=sharing', '_blank')}
+          >
+            <Icon name="BookOpen" size={16} className="mr-2" />
+            Документация
+          </Button>
           <Dialog open={showVersionDialog} onOpenChange={setShowVersionDialog}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -318,6 +327,8 @@ const MasterAdminView = () => {
       </div>
 
       <MasterDashboardStats tenants={tenants} versionsCount={versions.length} />
+
+      <MessengersStatusCard tenants={tenants} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <VersionsList versions={versions} />

@@ -29,13 +29,17 @@ def handler(event: dict, context) -> dict:
                     t.id, t.slug, t.name, t.description, t.owner_email, t.owner_phone,
                     t.template_version, t.auto_update, t.status, t.created_at, t.updated_at,
                     (SELECT COUNT(*) FROM t_p56134400_telegram_ai_bot_pdf.tenant_documents WHERE tenant_id = t.id) as doc_count,
-                    (SELECT COUNT(*) FROM t_p56134400_telegram_ai_bot_pdf.tenant_messages WHERE tenant_id = t.id) as message_count
+                    (SELECT COUNT(*) FROM t_p56134400_telegram_ai_bot_pdf.tenant_messages WHERE tenant_id = t.id) as message_count,
+                    ts.telegram_settings,
+                    COALESCE((ts.telegram_settings->>'vk_group_id')::text, '') as vk_status
                 FROM t_p56134400_telegram_ai_bot_pdf.tenants t
+                LEFT JOIN t_p56134400_telegram_ai_bot_pdf.tenant_settings ts ON ts.tenant_id = t.id
                 ORDER BY t.created_at DESC
             """)
             rows = cur.fetchall()
             tenants = []
             for row in rows:
+                telegram_settings = row[13] if row[13] else {}
                 tenants.append({
                     'id': row[0],
                     'slug': row[1],
@@ -49,7 +53,9 @@ def handler(event: dict, context) -> dict:
                     'created_at': row[9].isoformat() if row[9] else None,
                     'updated_at': row[10].isoformat() if row[10] else None,
                     'doc_count': row[11],
-                    'message_count': row[12]
+                    'message_count': row[12],
+                    'telegram_connected': bool(telegram_settings.get('bot_token')),
+                    'vk_connected': bool(row[14] and row[14].strip())
                 })
 
             cur.close()

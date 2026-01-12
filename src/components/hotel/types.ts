@@ -88,7 +88,6 @@ export const BACKEND_URLS = {
   getAiSettings: 'https://functions.poehali.dev/aa4e850d-6e48-49a5-8ffd-473d4ffa4235',
   updateAiSettings: 'https://functions.poehali.dev/a3f5f302-e16a-4bb7-8530-d0f6cd22091f',
   telegramWebhook: 'https://functions.poehali.dev/a54f2817-d6cf-49d2-9eeb-2c038523c0cb',
-  whatsappWebhook: 'https://functions.poehali.dev/1e648fcf-b686-457e-814b-e5df2382e7dd',
   vkWebhook: 'https://functions.poehali.dev/b008537a-2081-4b03-aaff-b39e8408818a',
   maxWebhook: 'https://functions.poehali.dev/ae0b074b-a749-4714-90d2-2146a6de57de',
   getChatStats: 'https://functions.poehali.dev/f818bf6f-d72f-49b5-9436-c59a8e588c61',

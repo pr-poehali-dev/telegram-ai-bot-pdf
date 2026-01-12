@@ -3,7 +3,6 @@
   "yookassa-webhook": "https://functions.poehali.dev/381d4828-88a8-44e7-a8d2-ef49c1ce8ab6",
   "yookassa-create-payment": "https://functions.poehali.dev/f4c127b8-2009-4d9b-b026-9fdf933b8b3a",
   "vk-webhook": "https://functions.poehali.dev/b008537a-2081-4b03-aaff-b39e8408818a",
-  "whatsapp-webhook": "https://functions.poehali.dev/1e648fcf-b686-457e-814b-e5df2382e7dd",
   "max-webhook": "https://functions.poehali.dev/ae0b074b-a749-4714-90d2-2146a6de57de",
   "master-admin-bulk-update": "https://functions.poehali.dev/06059507-42f3-4144-bcb9-b152556cd5ae",
   "master-admin-versions": "https://functions.poehali.dev/7f6c3892-47f2-47aa-91b0-541f0de7c211",
