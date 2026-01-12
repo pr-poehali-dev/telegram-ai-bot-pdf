@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 
@@ -10,6 +11,7 @@ interface AISettings {
   chat_model: string;
   embedding_provider: string;
   embedding_model: string;
+  system_prompt: string;
 }
 
 interface AISettingsCardProps {
@@ -22,7 +24,8 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
     chat_provider: 'deepseek',
     chat_model: 'deepseek-chat',
     embedding_provider: 'openai',
-    embedding_model: 'text-embedding-3-small'
+    embedding_model: 'text-embedding-3-small',
+    system_prompt: 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.'
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -202,6 +205,21 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="border-t pt-4">
+            <label className="text-sm font-medium text-slate-700 mb-2 block">
+              Системный промпт
+            </label>
+            <Textarea
+              value={settings.system_prompt}
+              onChange={(e) => setSettings({ ...settings, system_prompt: e.target.value })}
+              placeholder="Опишите, как должен вести себя ИИ-консьерж..."
+              className="min-h-[120px] resize-y"
+            />
+            <p className="text-xs text-slate-500 mt-2">
+              Инструкции для ИИ о том, как отвечать на вопросы гостей
+            </p>
           </div>
         </div>
 

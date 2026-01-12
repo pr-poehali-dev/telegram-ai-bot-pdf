@@ -56,6 +56,7 @@ def handler(event: dict, context) -> dict:
         chat_model = settings.get('chat_model', 'deepseek-chat')
         embedding_provider = settings.get('embedding_provider', 'openai')
         embedding_model = settings.get('embedding_model', 'text-embedding-3-small')
+        system_prompt_template = settings.get('system_prompt', 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.')
 
         try:
             if embedding_provider == 'yandexgpt':
@@ -129,10 +130,9 @@ def handler(event: dict, context) -> dict:
         """, (session_id, 'user', user_message))
         conn.commit()
         
-        system_prompt = f"""Ты виртуальный консьерж отеля. Отвечай доброжелательно и профессионально.
-Используй информацию из документов отеля для ответа.
+        system_prompt = f"""{system_prompt_template}
 
-Доступная информация:
+Доступная информация из документов:
 {context if context else 'Документы пока не загружены'}"""
 
         if chat_provider == 'yandexgpt':
