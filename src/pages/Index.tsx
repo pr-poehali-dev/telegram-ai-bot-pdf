@@ -6,6 +6,7 @@ import GuestView from '@/components/hotel/GuestView';
 import AdminView from '@/components/hotel/AdminView';
 import AdminLoginForm from '@/components/hotel/AdminLoginForm';
 import { Message, Document, BACKEND_URLS, PageSettings, QuickQuestion } from '@/components/hotel/types';
+import { isAuthenticated, logout, authenticatedFetch, getTenantId } from '@/lib/auth';
 
 const Index = () => {
   const [view, setView] = useState<'guest' | 'admin'>('guest');
@@ -27,9 +28,10 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (token) {
+    if (isAuthenticated()) {
       setIsAdminAuthenticated(true);
+    } else {
+      logout();
     }
   }, []);
 
@@ -60,7 +62,9 @@ const Index = () => {
 
   const loadDocuments = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.getDocuments);
+      const tenantId = getTenantId();
+      const url = tenantId ? `${BACKEND_URLS.getDocuments}?tenant_id=${tenantId}` : BACKEND_URLS.getDocuments;
+      const response = await authenticatedFetch(url);
       const data = await response.json();
       setDocuments(data.documents || []);
     } catch (error) {

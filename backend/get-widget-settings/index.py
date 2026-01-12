@@ -1,6 +1,7 @@
 import json
 import os
 import psycopg2
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     '''Получение настроек виджета для встраивания на сайт'''
@@ -13,21 +14,26 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': ''
         }
     
-    dsn = os.environ.get('DATABASE_URL')
-    conn = psycopg2.connect(dsn)
-    cur = conn.cursor()
-    
-    # Получаем widget_settings из JSONB для tenant_id=1
-    cur.execute("""
-        SELECT widget_settings
-        FROM t_p56134400_telegram_ai_bot_pdf.tenant_settings
-        WHERE tenant_id = 1
-    """)
+    try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+
+        dsn = os.environ.get('DATABASE_URL')
+        conn = psycopg2.connect(dsn)
+        cur = conn.cursor()
+        
+        # Получаем widget_settings из JSONB
+        cur.execute("""
+            SELECT widget_settings
+            FROM t_p56134400_telegram_ai_bot_pdf.tenant_settings
+            WHERE tenant_id = %s
+        """, (tenant_id,))
     
     result = cur.fetchone()
     cur.close()
@@ -53,11 +59,17 @@ def handler(event: dict, context) -> dict:
             'chat_url': None
         }
     
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        'body': json.dumps(settings)
-    }
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps(settings)
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': str(e)})
+        }

@@ -4,6 +4,7 @@ import base64
 import boto3
 import psycopg2
 from datetime import datetime
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     """Загрузка PDF файла в S3 и сохранение метаданных в БД"""
@@ -15,7 +16,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': '',
             'isBase64Encoded': False
@@ -30,6 +31,10 @@ def handler(event: dict, context) -> dict:
         }
 
     try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+        
         body = json.loads(event.get('body', '{}'))
         file_name = body.get('fileName')
         file_base64 = body.get('fileData')
@@ -66,10 +71,10 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         
         cur.execute("""
-            INSERT INTO documents (name, file_key, size_bytes, category, status)
-            VALUES (%s, %s, %s, %s, 'processing')
+            INSERT INTO t_p56134400_telegram_ai_bot_pdf.documents (tenant_id, name, file_key, size_bytes, category, status)
+            VALUES (%s, %s, %s, %s, %s, 'processing')
             RETURNING id
-        """, (file_name, file_key, file_size, category))
+        """, (tenant_id, file_name, file_key, file_size, category))
         
         doc_id = cur.fetchone()[0]
         conn.commit()

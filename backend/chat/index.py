@@ -46,6 +46,7 @@ def handler(event: dict, context) -> dict:
         body = json.loads(event.get('body', '{}'))
         user_message = body.get('message', '')
         session_id = body.get('sessionId', 'default')
+        tenant_id = body.get('tenantId', 1)
 
         if not user_message:
             return {
@@ -58,12 +59,11 @@ def handler(event: dict, context) -> dict:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
 
-        # Получаем ai_settings из JSONB для tenant_id=1
         cur.execute("""
             SELECT ai_settings
             FROM t_p56134400_telegram_ai_bot_pdf.tenant_settings
-            WHERE tenant_id = 1
-        """)
+            WHERE tenant_id = %s
+        """, (tenant_id,))
         settings_row = cur.fetchone()
         
         if settings_row and settings_row[0]:
@@ -139,8 +139,8 @@ def handler(event: dict, context) -> dict:
 
             cur.execute("""
                 SELECT chunk_text, embedding_text FROM t_p56134400_telegram_ai_bot_pdf.tenant_chunks 
-                WHERE tenant_id = 1 AND embedding_text IS NOT NULL
-            """)
+                WHERE tenant_id = %s AND embedding_text IS NOT NULL
+            """, (tenant_id,))
             all_chunks = cur.fetchall()
 
             if all_chunks:

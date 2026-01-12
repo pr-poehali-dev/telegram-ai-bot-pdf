@@ -4,6 +4,7 @@ import boto3
 import psycopg2
 from datetime import datetime
 from io import BytesIO
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     """Обработка PDF: извлечение текста и разбиение на чанки"""
@@ -15,7 +16,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': '',
             'isBase64Encoded': False
@@ -30,6 +31,10 @@ def handler(event: dict, context) -> dict:
         }
 
     try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+        
         import PyPDF2
         from openai import OpenAI
         
@@ -47,7 +52,7 @@ def handler(event: dict, context) -> dict:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
-        cur.execute("SELECT file_key FROM t_p56134400_telegram_ai_bot_pdf.documents WHERE id = %s", (document_id,))
+        cur.execute("SELECT file_key, tenant_id FROM t_p56134400_telegram_ai_bot_pdf.documents WHERE id = %s AND tenant_id = %s", (document_id, tenant_id))
         result = cur.fetchone()
         
         if not result:

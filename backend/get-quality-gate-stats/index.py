@@ -1,6 +1,7 @@
 import json
 import os
 import psycopg2
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     """Получение статистики Quality Gate"""
@@ -12,7 +13,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': '',
             'isBase64Encoded': False
@@ -27,6 +28,10 @@ def handler(event: dict, context) -> dict:
         }
 
     try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
 

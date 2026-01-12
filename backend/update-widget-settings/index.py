@@ -1,6 +1,7 @@
 import json
 import os
 import psycopg2
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     '''Обновление настроек виджета'''
@@ -13,7 +14,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': ''
         }
@@ -25,11 +26,16 @@ def handler(event: dict, context) -> dict:
             'body': json.dumps({'error': 'Method not allowed'})
         }
     
-    data = json.loads(event.get('body', '{}'))
-    
-    dsn = os.environ.get('DATABASE_URL')
-    conn = psycopg2.connect(dsn)
-    cur = conn.cursor()
+    try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+
+        data = json.loads(event.get('body', '{}'))
+        
+        dsn = os.environ.get('DATABASE_URL')
+        conn = psycopg2.connect(dsn)
+        cur = conn.cursor()
     
     # Формируем JSONB объект с настройками виджета
     widget_settings = {
@@ -51,23 +57,29 @@ def handler(event: dict, context) -> dict:
     
     widget_settings_json = json.dumps(widget_settings)
     
-    # Обновляем widget_settings в JSONB для tenant_id=1
-    cur.execute("""
-        UPDATE t_p56134400_telegram_ai_bot_pdf.tenant_settings
-        SET widget_settings = %s::jsonb,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE tenant_id = 1
-    """, (widget_settings_json,))
+        # Обновляем widget_settings в JSONB
+        cur.execute("""
+            UPDATE t_p56134400_telegram_ai_bot_pdf.tenant_settings
+            SET widget_settings = %s::jsonb,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE tenant_id = %s
+        """, (widget_settings_json, tenant_id))
     
-    conn.commit()
-    cur.close()
-    conn.close()
-    
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        'body': json.dumps({'success': True})
-    }
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'success': True})
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': str(e)})
+        }

@@ -11,6 +11,7 @@ interface AdminLoginFormProps {
 }
 
 const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
@@ -21,10 +22,10 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!password.trim()) {
+    if (!username.trim() || !password.trim()) {
       toast({
         title: 'Ошибка',
-        description: 'Введите пароль',
+        description: 'Введите логин и пароль',
         variant: 'destructive'
       });
       return;
@@ -36,18 +37,19 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
       const response = await fetch(BACKEND_URLS.authAdmin, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ username, password })
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
         localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminUser', JSON.stringify(data.user));
         setAttemptsLeft(null);
         setIsLocked(false);
         toast({
           title: 'Успешно!',
-          description: 'Добро пожаловать в админку'
+          description: `Добро пожаловать, ${data.user.username}!`
         });
         onLoginSuccess();
       } else if (response.status === 429) {
@@ -97,7 +99,21 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="text-sm font-medium text-slate-700 mb-2 block">
-                Пароль администратора
+                Логин
+              </label>
+              <Input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Введите логин"
+                className="text-lg"
+                disabled={isLoading}
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                Пароль
               </label>
               <Input
                 type="password"
@@ -106,7 +122,6 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
                 placeholder="Введите пароль"
                 className="text-lg"
                 disabled={isLoading}
-                autoFocus
               />
             </div>
 
@@ -137,7 +152,7 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
 
             <Button
               type="submit"
-              disabled={isLoading || !password.trim() || isLocked}
+              disabled={isLoading || !username.trim() || !password.trim() || isLocked}
               className="w-full h-12 text-base"
             >
               {isLoading ? (

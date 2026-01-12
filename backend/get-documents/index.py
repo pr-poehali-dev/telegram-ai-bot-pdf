@@ -1,6 +1,7 @@
 import json
 import os
 import psycopg2
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     """Получение списка всех документов"""
@@ -12,7 +13,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': '',
             'isBase64Encoded': False
@@ -27,14 +28,19 @@ def handler(event: dict, context) -> dict:
         }
 
     try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+        
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
         cur.execute("""
             SELECT id, name, size_bytes, pages, category, status, uploaded_at, processed_at
-            FROM documents
+            FROM t_p56134400_telegram_ai_bot_pdf.documents
+            WHERE tenant_id = %s
             ORDER BY uploaded_at DESC
-        """)
+        """, (tenant_id,))
         
         rows = cur.fetchall()
         documents = []

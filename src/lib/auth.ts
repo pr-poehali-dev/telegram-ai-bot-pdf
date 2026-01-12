@@ -1,0 +1,98 @@
+interface AdminUser {
+  id: number;
+  username: string;
+  role: 'super_admin' | 'tenant_admin';
+  tenant_id: number | null;
+}
+
+interface DecodedToken {
+  user_id: number;
+  username: string;
+  role: string;
+  tenant_id: number | null;
+  exp: number;
+}
+
+export const getAuthToken = (): string | null => {
+  return localStorage.getItem('adminToken');
+};
+
+export const getAdminUser = (): AdminUser | null => {
+  const userStr = localStorage.getItem('adminUser');
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
+};
+
+export const isAuthenticated = (): boolean => {
+  const token = getAuthToken();
+  if (!token) return false;
+  
+  try {
+    const payload = parseJwt(token);
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp > currentTime;
+  } catch {
+    return false;
+  }
+};
+
+export const isSuperAdmin = (): boolean => {
+  const user = getAdminUser();
+  return user?.role === 'super_admin';
+};
+
+export const getTenantId = (): number | null => {
+  const user = getAdminUser();
+  return user?.tenant_id ?? null;
+};
+
+export const logout = () => {
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminUser');
+};
+
+export const getAuthHeaders = (): HeadersInit => {
+  const token = getAuthToken();
+  if (!token) return {};
+  
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
+export const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  const headers = {
+    ...getAuthHeaders(),
+    ...options.headers
+  };
+  
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+  
+  if (response.status === 401) {
+    logout();
+    window.location.reload();
+  }
+  
+  return response;
+};
+
+function parseJwt(token: string): DecodedToken {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split('')
+      .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+      .join('')
+  );
+  
+  return JSON.parse(jsonPayload);
+}

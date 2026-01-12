@@ -2,6 +2,7 @@ import json
 import os
 import psycopg2
 from datetime import datetime
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     """Обновление настроек страницы и быстрых вопросов"""
@@ -13,7 +14,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': '',
             'isBase64Encoded': False
@@ -28,6 +29,10 @@ def handler(event: dict, context) -> dict:
         }
 
     try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+
         body = json.loads(event.get('body', '{}'))
         settings = body.get('settings', {})
         quick_questions = body.get('quickQuestions', [])
@@ -35,14 +40,14 @@ def handler(event: dict, context) -> dict:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
 
-        # Обновляем page_settings в JSONB для tenant_id=1
+        # Обновляем page_settings в JSONB
         settings_json = json.dumps(settings)
         cur.execute("""
             UPDATE t_p56134400_telegram_ai_bot_pdf.tenant_settings
             SET page_settings = %s::jsonb,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE tenant_id = 1
-        """, (settings_json,))
+            WHERE tenant_id = %s
+        """, (settings_json, tenant_id))
 
         # Обновляем quick_questions (пока оставляем в отдельной таблице)
         cur.execute("DELETE FROM t_p56134400_telegram_ai_bot_pdf.quick_questions")

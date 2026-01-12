@@ -2,6 +2,7 @@ import json
 import os
 import psycopg2
 import boto3
+from auth_middleware import get_tenant_id_from_request
 
 def handler(event: dict, context) -> dict:
     """Удаление PDF документа и всех связанных данных"""
@@ -13,7 +14,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Authorization'
             },
             'body': '',
             'isBase64Encoded': False
@@ -28,6 +29,10 @@ def handler(event: dict, context) -> dict:
         }
 
     try:
+        tenant_id, auth_error = get_tenant_id_from_request(event)
+        if auth_error:
+            return auth_error
+        
         body = json.loads(event.get('body', '{}'))
         document_id = body.get('documentId')
 
@@ -44,8 +49,8 @@ def handler(event: dict, context) -> dict:
 
         cur.execute("""
             SELECT file_key FROM t_p56134400_telegram_ai_bot_pdf.documents 
-            WHERE id = %s
-        """, (document_id,))
+            WHERE id = %s AND tenant_id = %s
+        """, (document_id, tenant_id))
         result = cur.fetchone()
 
         if not result:
