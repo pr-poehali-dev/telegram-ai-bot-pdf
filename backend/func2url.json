@@ -1,4 +1,7 @@
 {
+  "vk-webhook": "https://functions.poehali.dev/b008537a-2081-4b03-aaff-b39e8408818a",
+  "whatsapp-webhook": "https://functions.poehali.dev/1e648fcf-b686-457e-814b-e5df2382e7dd",
+  "max-webhook": "https://functions.poehali.dev/ae0b074b-a749-4714-90d2-2146a6de57de",
   "master-admin-bulk-update": "https://functions.poehali.dev/06059507-42f3-4144-bcb9-b152556cd5ae",
   "master-admin-versions": "https://functions.poehali.dev/7f6c3892-47f2-47aa-91b0-541f0de7c211",
   "master-admin-tenants": "https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8",

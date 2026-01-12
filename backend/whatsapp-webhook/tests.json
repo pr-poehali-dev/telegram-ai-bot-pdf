@@ -1,0 +1,42 @@
+{
+  "tests": [
+    {
+      "name": "Verify webhook (GET)",
+      "method": "GET",
+      "path": "/?hub.mode=subscribe&hub.verify_token=test_token&hub.challenge=test_challenge",
+      "expectedStatus": 200,
+      "expectedBody": "test_challenge"
+    },
+    {
+      "name": "Handle incoming message (POST)",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "entry": [
+          {
+            "changes": [
+              {
+                "value": {
+                  "messages": [
+                    {
+                      "from": "1234567890",
+                      "type": "text",
+                      "text": {
+                        "body": "Привет"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "status": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
