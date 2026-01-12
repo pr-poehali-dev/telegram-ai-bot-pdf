@@ -51,9 +51,7 @@ def handler(event: dict, context) -> dict:
 
         session_id = f"telegram-{chat_id}"
 
-        chat_function_url = os.environ.get('CHAT_FUNCTION_URL', '')
-        if not chat_function_url:
-            raise Exception('CHAT_FUNCTION_URL not configured')
+        chat_function_url = 'https://functions.poehali.dev/7b58f4fb-5db0-4f85-bb3b-55bafa4cbf73'
 
         chat_response = requests.post(
             chat_function_url,
