@@ -147,6 +147,11 @@ def handler(event: dict, context) -> dict:
                     chunk_embedding = json.loads(embedding_text)
                     similarity = cosine_similarity(query_embedding, chunk_embedding)
                     scored_chunks.append((chunk_text, similarity))
+                
+                scored_chunks.sort(key=lambda x: x[1], reverse=True)
+                print(f"DEBUG: Top 3 chunks for query '{user_message}':")
+                for i, (chunk, sim) in enumerate(scored_chunks[:3]):
+                    print(f"  {i+1}. Similarity: {sim:.4f}, Text: {chunk[:200]}...")
 
                 request_id = context.request_id if hasattr(context, 'request_id') else 'unknown'
                 query_hash = hashlib.sha256(user_message.encode()).hexdigest()[:12]
