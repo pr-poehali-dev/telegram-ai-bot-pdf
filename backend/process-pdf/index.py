@@ -102,6 +102,7 @@ def handler(event: dict, context) -> dict:
                     yandex_api_key = os.environ.get('YANDEXGPT_API_KEY')
                     yandex_folder_id = os.environ.get('YANDEXGPT_FOLDER_ID')
                     
+                    # Для документов всегда используем text-search-doc
                     emb_response = requests.post(
                         'https://llm.api.cloud.yandex.net/foundationModels/v1/textEmbedding',
                         headers={
@@ -109,7 +110,7 @@ def handler(event: dict, context) -> dict:
                             'Content-Type': 'application/json'
                         },
                         json={
-                            'modelUri': f'emb://{yandex_folder_id}/{embedding_model}/latest',
+                            'modelUri': f'emb://{yandex_folder_id}/text-search-doc/latest',
                             'text': chunk_text
                         }
                     )
