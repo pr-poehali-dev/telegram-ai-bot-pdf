@@ -3,14 +3,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 import { BACKEND_URLS, AI_MODELS, DEFAULT_AI_SETTINGS, AiModelSettings } from './types';
 import Icon from '@/components/ui/icon';
+import { AI_PRESETS } from './AiSettingsPresets';
+import AiSettingsSliders from './AiSettingsSliders';
 
 const AiSettingsCard = () => {
   const [selectedModel, setSelectedModel] = useState<string>('yandexgpt');
   const [settings, setSettings] = useState<AiModelSettings>(DEFAULT_AI_SETTINGS.yandexgpt);
+  const [selectedPreset, setSelectedPreset] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -34,10 +36,24 @@ const AiSettingsCard = () => {
   const handleModelChange = (model: string) => {
     setSelectedModel(model);
     setSettings(DEFAULT_AI_SETTINGS[model as keyof typeof DEFAULT_AI_SETTINGS]);
+    setSelectedPreset('');
+  };
+
+  const handlePresetChange = (presetId: string) => {
+    setSelectedPreset(presetId);
+    const preset = AI_PRESETS[selectedModel]?.find(p => p.id === presetId);
+    if (preset) {
+      setSettings(preset.settings);
+      toast({
+        title: 'Пресет применён',
+        description: preset.name
+      });
+    }
   };
 
   const handleResetToDefaults = () => {
     setSettings(DEFAULT_AI_SETTINGS[selectedModel as keyof typeof DEFAULT_AI_SETTINGS]);
+    setSelectedPreset('');
     toast({
       title: 'Сброшено',
       description: 'Настройки восстановлены по умолчанию'
@@ -76,6 +92,7 @@ const AiSettingsCard = () => {
 
   const currentDefaults = DEFAULT_AI_SETTINGS[selectedModel as keyof typeof DEFAULT_AI_SETTINGS];
   const isDefaultSettings = JSON.stringify(settings) === JSON.stringify(currentDefaults);
+  const currentPresets = AI_PRESETS[selectedModel] || [];
 
   return (
     <Card>
@@ -105,147 +122,43 @@ const AiSettingsCard = () => {
           </Select>
         </div>
 
-        <div className="space-y-4 pt-2">
+        {currentPresets.length > 0 && (
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label>Temperature</Label>
-              <span className="text-sm text-slate-500">{settings.temperature}</span>
-            </div>
-            <Slider
-              value={[settings.temperature]}
-              onValueChange={(value) => setSettings({ ...settings, temperature: value[0] })}
-              min={0}
-              max={1}
-              step={0.05}
-              className="w-full"
-            />
-            <p className="text-xs text-slate-500">
-              {selectedModel === 'yandexgpt' 
-                ? 'Рекомендуется 0.15 для минимума галлюцинаций при RAG'
-                : 'Рекомендуется 0.2 для стабильных ответов'}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label>Top P</Label>
-              <span className="text-sm text-slate-500">{settings.top_p}</span>
-            </div>
-            <Slider
-              value={[settings.top_p]}
-              onValueChange={(value) => setSettings({ ...settings, top_p: value[0] })}
-              min={0}
-              max={1}
-              step={0.05}
-              className="w-full"
-            />
-            <p className="text-xs text-slate-500">
-              При низкой температуре влияет слабо, оставьте 1.0
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label>Max Tokens</Label>
-              <span className="text-sm text-slate-500">{settings.max_tokens}</span>
-            </div>
-            <Slider
-              value={[settings.max_tokens]}
-              onValueChange={(value) => setSettings({ ...settings, max_tokens: value[0] })}
-              min={100}
-              max={1000}
-              step={50}
-              className="w-full"
-            />
-            <p className="text-xs text-slate-500">
-              {selectedModel === 'yandexgpt'
-                ? 'Рекомендуется 400-600, YandexGPT любит "растекаться"'
-                : 'Максимальная длина ответа в токенах'}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label>Frequency Penalty</Label>
-              <span className="text-sm text-slate-500">{settings.frequency_penalty}</span>
-            </div>
-            <Slider
-              value={[settings.frequency_penalty]}
-              onValueChange={(value) => setSettings({ ...settings, frequency_penalty: value[0] })}
-              min={0}
-              max={2}
-              step={0.1}
-              className="w-full"
-            />
-            <p className="text-xs text-slate-500">
-              {selectedModel === 'yandexgpt'
-                ? 'Рекомендуется 0 — повторы фраз нужны для шаблонов консьержа'
-                : 'Штраф за частые повторы слов'}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label>Presence Penalty</Label>
-              <span className="text-sm text-slate-500">{settings.presence_penalty}</span>
-            </div>
-            <Slider
-              value={[settings.presence_penalty]}
-              onValueChange={(value) => setSettings({ ...settings, presence_penalty: value[0] })}
-              min={0}
-              max={2}
-              step={0.1}
-              className="w-full"
-            />
-            <p className="text-xs text-slate-500">
-              {selectedModel === 'yandexgpt'
-                ? 'Рекомендуется 0 — консьерж не должен уходить в новые темы'
-                : 'Штраф за повтор уже использованных тем'}
-            </p>
-          </div>
-
-          {selectedModel === 'yandexgpt' && (
-            <>
-              <div className="space-y-2">
-                <Label>System Priority</Label>
-                <Select
-                  value={settings.system_priority}
-                  onValueChange={(value) => setSettings({ ...settings, system_priority: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="strict">Strict (рекомендуется)</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-slate-500">
-                  Strict обязательно — защищает от выбивания промпта пользователем
+            <Label>Пресеты настроек</Label>
+            <Select value={selectedPreset} onValueChange={handlePresetChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите пресет или настройте вручную" />
+              </SelectTrigger>
+              <SelectContent>
+                {currentPresets.map((preset) => (
+                  <SelectItem key={preset.id} value={preset.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{preset.name}</span>
+                      <span className="text-xs text-slate-500">{preset.description}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedPreset && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  <Icon name="Info" size={16} className="inline mr-1" />
+                  {currentPresets.find(p => p.id === selectedPreset)?.description}
                 </p>
               </div>
+            )}
+          </div>
+        )}
 
-              <div className="space-y-2">
-                <Label>Creative Mode</Label>
-                <Select
-                  value={settings.creative_mode}
-                  onValueChange={(value) => setSettings({ ...settings, creative_mode: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="off">Off (рекомендуется)</SelectItem>
-                    <SelectItem value="on">On</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-slate-500">
-                  Выключите — нужен максимально инструктивный режим
-                </p>
-              </div>
-            </>
-          )}
-        </div>
+        <AiSettingsSliders
+          settings={settings}
+          selectedModel={selectedModel}
+          onSettingsChange={(newSettings) => {
+            setSettings(newSettings);
+            setSelectedPreset('');
+          }}
+        />
 
         <div className="flex gap-2 pt-4">
           <Button
@@ -264,7 +177,7 @@ const AiSettingsCard = () => {
           </Button>
         </div>
 
-        {!isDefaultSettings && (
+        {!isDefaultSettings && !selectedPreset && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
             <p className="text-sm text-amber-800">
               <Icon name="AlertTriangle" size={16} className="inline mr-1" />
