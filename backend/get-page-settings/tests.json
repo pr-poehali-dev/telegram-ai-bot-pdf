@@ -1,0 +1,15 @@
+{
+  "tests": [
+    {
+      "name": "Get page settings and quick questions",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "settings": "object",
+        "quickQuestions": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

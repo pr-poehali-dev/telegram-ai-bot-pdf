@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import GuestView from '@/components/hotel/GuestView';
 import AdminView from '@/components/hotel/AdminView';
 import AdminLoginForm from '@/components/hotel/AdminLoginForm';
-import { Message, Document, BACKEND_URLS } from '@/components/hotel/types';
+import { Message, Document, BACKEND_URLS, PageSettings, QuickQuestion } from '@/components/hotel/types';
 
 const Index = () => {
   const [view, setView] = useState<'guest' | 'admin'>('guest');
@@ -22,6 +22,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [sessionId] = useState(() => `session-${Date.now()}`);
+  const [pageSettings, setPageSettings] = useState<PageSettings | undefined>();
+  const [quickQuestions, setQuickQuestions] = useState<QuickQuestion[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,10 +34,29 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    loadPageSettings();
+  }, []);
+
+  useEffect(() => {
     if (view === 'admin' && isAdminAuthenticated) {
       loadDocuments();
     }
   }, [view, isAdminAuthenticated]);
+
+  const loadPageSettings = async () => {
+    try {
+      const response = await fetch(BACKEND_URLS.getPageSettings);
+      const data = await response.json();
+      if (data.settings) {
+        setPageSettings(data.settings);
+      }
+      if (data.quickQuestions) {
+        setQuickQuestions(data.quickQuestions);
+      }
+    } catch (error) {
+      console.error('Error loading page settings:', error);
+    }
+  };
 
   const loadDocuments = async () => {
     try {
@@ -304,6 +325,8 @@ const Index = () => {
             onInputChange={setInputMessage}
             onSendMessage={handleSendMessage}
             onQuickQuestion={handleQuickQuestion}
+            pageSettings={pageSettings}
+            quickQuestions={quickQuestions}
           />
         ) : (
           <AdminView
@@ -313,6 +336,17 @@ const Index = () => {
             onDeleteDocument={handleDeleteDocument}
           />
         )}
+
+        <footer className="mt-8 text-center text-sm text-slate-600 animate-fade-in">
+          <a 
+            href={pageSettings?.footer_link || 'https://max.im/+79787236035'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors underline"
+          >
+            {pageSettings?.footer_text || 'Хочу такого бота!'}
+          </a>
+        </footer>
       </div>
     </div>
   );

@@ -1,4 +1,6 @@
 {
+  "update-page-settings": "https://functions.poehali.dev/83326caa-63b4-4bfa-a3f1-b0fee1d4baf9",
+  "get-page-settings": "https://functions.poehali.dev/0534411b-d900-45d2-9082-a9485b33cf20",
   "auth-admin": "https://functions.poehali.dev/20be465d-cf04-4dc0-bbd3-1fc7ffb67ada",
   "get-chat-stats": "https://functions.poehali.dev/f818bf6f-d72f-49b5-9436-c59a8e588c61",
   "telegram-webhook": "https://functions.poehali.dev/a54f2817-d6cf-49d2-9eeb-2c038523c0cb",

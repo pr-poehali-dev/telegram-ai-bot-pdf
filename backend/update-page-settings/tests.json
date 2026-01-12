@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "name": "Update page settings",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "settings": {
+          "page_title": "Test Title"
+        },
+        "quickQuestions": [
+          {
+            "text": "Test",
+            "question": "Test question",
+            "icon": "HelpCircle"
+          }
+        ]
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

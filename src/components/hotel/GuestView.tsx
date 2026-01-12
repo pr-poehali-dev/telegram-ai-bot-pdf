@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Icon from '@/components/ui/icon';
 import ChatMessage from './ChatMessage';
-import { Message, quickQuestions } from './types';
+import { Message, QuickQuestion, PageSettings } from './types';
 
 interface GuestViewProps {
   messages: Message[];
@@ -13,6 +13,8 @@ interface GuestViewProps {
   onInputChange: (value: string) => void;
   onSendMessage: () => void;
   onQuickQuestion: (question: string) => void;
+  pageSettings?: PageSettings;
+  quickQuestions?: QuickQuestion[];
 }
 
 const GuestView = ({
@@ -21,7 +23,9 @@ const GuestView = ({
   isLoading,
   onInputChange,
   onSendMessage,
-  onQuickQuestion
+  onQuickQuestion,
+  pageSettings,
+  quickQuestions = []
 }: GuestViewProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -30,9 +34,9 @@ const GuestView = ({
           <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">
             <CardTitle className="flex items-center gap-2">
               <Icon name="MessageCircle" size={20} />
-              Чат с консьержем
+              {pageSettings?.page_title || 'Чат с консьержем'}
             </CardTitle>
-            <CardDescription>Спросите о номерах, услугах и инфраструктуре</CardDescription>
+            <CardDescription>{pageSettings?.page_subtitle || 'Спросите о номерах, услугах и инфраструктуре'}</CardDescription>
           </CardHeader>
           <CardContent className="p-0 flex flex-col h-[calc(100%-100px)]">
             <ScrollArea className="flex-1 p-6">
@@ -55,7 +59,7 @@ const GuestView = ({
             <div className="p-4 border-t bg-slate-50/50">
               <div className="flex gap-2">
                 <Input
-                  placeholder="Задайте вопрос..."
+                  placeholder={pageSettings?.input_placeholder || 'Задайте вопрос...'}
                   value={inputMessage}
                   onChange={(e) => onInputChange(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && !isLoading && onSendMessage()}
@@ -76,7 +80,7 @@ const GuestView = ({
           <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Icon name="Lightbulb" size={18} />
-              Быстрые вопросы
+              {pageSettings?.quick_questions_title || 'Быстрые вопросы'}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
@@ -101,7 +105,7 @@ const GuestView = ({
           <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Icon name="Info" size={18} />
-              Контакты
+              {pageSettings?.contacts_title || 'Контакты'}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
@@ -110,8 +114,8 @@ const GuestView = ({
                 <Icon name="Phone" size={16} className="text-primary" />
               </div>
               <div>
-                <p className="font-medium text-slate-900">Ресепшн</p>
-                <p className="text-slate-600">+7 (495) 123-45-67</p>
+                <p className="font-medium text-slate-900">{pageSettings?.contact_phone_label || 'Ресепшн'}</p>
+                <p className="text-slate-600">{pageSettings?.contact_phone_value || '+7 (495) 123-45-67'}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 text-sm">
@@ -119,8 +123,8 @@ const GuestView = ({
                 <Icon name="Mail" size={16} className="text-green-600" />
               </div>
               <div>
-                <p className="font-medium text-slate-900">Email</p>
-                <p className="text-slate-600">info@hotel.ru</p>
+                <p className="font-medium text-slate-900">{pageSettings?.contact_email_label || 'Email'}</p>
+                <p className="text-slate-600">{pageSettings?.contact_email_value || 'info@hotel.ru'}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 text-sm">
@@ -128,8 +132,8 @@ const GuestView = ({
                 <Icon name="MapPin" size={16} className="text-purple-600" />
               </div>
               <div>
-                <p className="font-medium text-slate-900">Адрес</p>
-                <p className="text-slate-600">Москва, ул. Примерная, 1</p>
+                <p className="font-medium text-slate-900">{pageSettings?.contact_address_label || 'Адрес'}</p>
+                <p className="text-slate-600">{pageSettings?.contact_address_value || 'Москва, ул. Примерная, 1'}</p>
               </div>
             </div>
           </CardContent>

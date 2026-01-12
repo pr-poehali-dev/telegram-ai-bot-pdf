@@ -15,6 +15,30 @@ export interface Document {
   uploadedAt: string;
 }
 
+export interface QuickQuestion {
+  id?: number;
+  icon: string;
+  text: string;
+  question: string;
+  sort_order?: number;
+}
+
+export interface PageSettings {
+  page_title: string;
+  page_subtitle: string;
+  quick_questions_title: string;
+  contacts_title: string;
+  contact_phone_label: string;
+  contact_phone_value: string;
+  contact_email_label: string;
+  contact_email_value: string;
+  contact_address_label: string;
+  contact_address_value: string;
+  footer_text: string;
+  footer_link: string;
+  input_placeholder: string;
+}
+
 export const BACKEND_URLS = {
   chat: 'https://functions.poehali.dev/7b58f4fb-5db0-4f85-bb3b-55bafa4cbf73',
   uploadPdf: 'https://functions.poehali.dev/1ecfd90c-5cef-40a0-af5b-3ba36d6c50c9',
@@ -25,7 +49,9 @@ export const BACKEND_URLS = {
   updateAiSettings: 'https://functions.poehali.dev/a3f5f302-e16a-4bb7-8530-d0f6cd22091f',
   telegramWebhook: 'https://functions.poehali.dev/a54f2817-d6cf-49d2-9eeb-2c038523c0cb',
   getChatStats: 'https://functions.poehali.dev/f818bf6f-d72f-49b5-9436-c59a8e588c61',
-  authAdmin: 'https://functions.poehali.dev/20be465d-cf04-4dc0-bbd3-1fc7ffb67ada'
+  authAdmin: 'https://functions.poehali.dev/20be465d-cf04-4dc0-bbd3-1fc7ffb67ada',
+  getPageSettings: 'https://functions.poehali.dev/0534411b-d900-45d2-9082-a9485b33cf20',
+  updatePageSettings: 'https://functions.poehali.dev/83326caa-63b4-4bfa-a3f1-b0fee1d4baf9'
 };
 
 export const quickQuestions = [

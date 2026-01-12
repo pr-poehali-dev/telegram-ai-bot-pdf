@@ -5,6 +5,7 @@ import Icon from '@/components/ui/icon';
 import AISettingsCard from './AISettingsCard';
 import TelegramSettingsCard from './TelegramSettingsCard';
 import ChatStatsCard from './ChatStatsCard';
+import PageSettingsCard from './PageSettingsCard';
 import { Document, BACKEND_URLS } from './types';
 import { useState, useMemo } from 'react';
 
@@ -98,7 +99,7 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AISettingsCard
           getSettingsUrl={BACKEND_URLS.getAiSettings}
           updateSettingsUrl={BACKEND_URLS.updateAiSettings}
@@ -107,6 +108,10 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
           webhookUrl={BACKEND_URLS.telegramWebhook}
           chatFunctionUrl={BACKEND_URLS.chat}
         />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PageSettingsCard />
         <Card className="shadow-xl">
           <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">
             <CardTitle className="flex items-center gap-2">
