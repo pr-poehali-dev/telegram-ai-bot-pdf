@@ -82,6 +82,11 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
       { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
       { value: 'gpt-4', label: 'GPT-4 (стабильная)' },
       { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo (дешевая)' }
+    ],
+    yandexgpt: [
+      { value: 'yandexgpt-lite', label: 'YandexGPT Lite (быстрая)' },
+      { value: 'yandexgpt', label: 'YandexGPT (стандарт)' },
+      { value: 'yandexgpt/latest', label: 'YandexGPT Latest' }
     ]
   };
 
@@ -124,6 +129,7 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
               <SelectContent>
                 <SelectItem value="deepseek">DeepSeek (дешевле)</SelectItem>
                 <SelectItem value="openai">OpenAI (качественнее)</SelectItem>
+                <SelectItem value="yandexgpt">YandexGPT (российская)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -221,8 +227,8 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
               <p className="font-medium text-blue-900">Рекомендации:</p>
               <ul className="text-blue-800 mt-2 space-y-1 list-disc list-inside">
                 <li>DeepSeek в 50 раз дешевле OpenAI</li>
+                <li>YandexGPT — российская альтернатива</li>
                 <li>GPT-4o — новейшая модель OpenAI</li>
-                <li>GPT-4o Mini — быстрая и дешевая</li>
                 <li>Эмбеддинги только через OpenAI</li>
               </ul>
             </div>

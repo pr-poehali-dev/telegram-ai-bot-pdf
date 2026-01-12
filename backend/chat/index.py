@@ -116,31 +116,64 @@ def handler(event: dict, context) -> dict:
         """, (session_id, 'user', user_message))
         conn.commit()
         
-        if chat_provider == 'openai':
-            chat_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-        else:
-            chat_client = OpenAI(
-                api_key=os.environ.get('DEEPSEEK_API_KEY'),
-                base_url="https://api.deepseek.com"
-            )
-
         system_prompt = f"""Ты виртуальный консьерж отеля. Отвечай доброжелательно и профессионально.
 Используй информацию из документов отеля для ответа.
 
 Доступная информация:
 {context if context else 'Документы пока не загружены'}"""
 
-        response = chat_client.chat.completions.create(
-            model=chat_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ],
-            temperature=0.7,
-            max_tokens=500
-        )
-
-        assistant_message = response.choices[0].message.content
+        if chat_provider == 'yandexgpt':
+            import requests
+            yandex_api_key = os.environ.get('YANDEXGPT_API_KEY')
+            yandex_folder_id = os.environ.get('YANDEXGPT_FOLDER_ID')
+            
+            yandex_response = requests.post(
+                'https://llm.api.cloud.yandex.net/foundationModels/v1/completion',
+                headers={
+                    'Authorization': f'Api-Key {yandex_api_key}',
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    'modelUri': f'gpt://{yandex_folder_id}/{chat_model}',
+                    'completionOptions': {
+                        'temperature': 0.7,
+                        'maxTokens': 500
+                    },
+                    'messages': [
+                        {'role': 'system', 'text': system_prompt},
+                        {'role': 'user', 'text': user_message}
+                    ]
+                }
+            )
+            yandex_data = yandex_response.json()
+            assistant_message = yandex_data['result']['alternatives'][0]['message']['text']
+        elif chat_provider == 'openai':
+            chat_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+            response = chat_client.chat.completions.create(
+                model=chat_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                temperature=0.7,
+                max_tokens=500
+            )
+            assistant_message = response.choices[0].message.content
+        else:
+            chat_client = OpenAI(
+                api_key=os.environ.get('DEEPSEEK_API_KEY'),
+                base_url="https://api.deepseek.com"
+            )
+            response = chat_client.chat.completions.create(
+                model=chat_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message}
+                ],
+                temperature=0.7,
+                max_tokens=500
+            )
+            assistant_message = response.choices[0].message.content
 
         cur.execute("""
             INSERT INTO t_p56134400_telegram_ai_bot_pdf.chat_messages (session_id, role, content)
