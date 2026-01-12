@@ -85,6 +85,10 @@ def handler(event: dict, context) -> dict:
             if chunk.strip():
                 chunks.append(chunk)
 
+        # Удаляем старые чанки перед переиндексацией
+        cur.execute("DELETE FROM t_p56134400_telegram_ai_bot_pdf.document_chunks WHERE document_id = %s", (document_id,))
+        cur.execute("DELETE FROM t_p56134400_telegram_ai_bot_pdf.tenant_chunks WHERE document_id = %s", (document_id,))
+        
         cur.execute("""
             SELECT setting_key, setting_value 
             FROM t_p56134400_telegram_ai_bot_pdf.ai_settings
@@ -134,6 +138,12 @@ def handler(event: dict, context) -> dict:
                 (document_id, chunk_text, chunk_index, embedding_text)
                 VALUES (%s, %s, %s, %s)
             """, (document_id, chunk_text, idx, embedding_json))
+            
+            cur.execute("""
+                INSERT INTO t_p56134400_telegram_ai_bot_pdf.tenant_chunks 
+                (tenant_id, document_id, chunk_text, chunk_index, embedding_text)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (1, document_id, chunk_text, idx, embedding_json))
 
         cur.execute("""
             UPDATE t_p56134400_telegram_ai_bot_pdf.documents 
