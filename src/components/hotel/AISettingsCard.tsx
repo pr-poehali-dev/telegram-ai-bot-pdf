@@ -123,10 +123,11 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
             <Select
               value={settings.chat_provider}
               onValueChange={(value) => {
+                const models = chatModels[value as keyof typeof chatModels];
                 setSettings({
                   ...settings,
                   chat_provider: value,
-                  chat_model: chatModels[value as keyof typeof chatModels][0].value
+                  chat_model: models?.[0]?.value || ''
                 });
               }}
             >
@@ -153,11 +154,11 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {chatModels[settings.chat_provider as keyof typeof chatModels].map((model) => (
+                {chatModels[settings.chat_provider as keyof typeof chatModels]?.map((model) => (
                   <SelectItem key={model.value} value={model.value}>
                     {model.label}
                   </SelectItem>
-                ))}
+                )) || []}
               </SelectContent>
             </Select>
           </div>
@@ -169,10 +170,11 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
             <Select
               value={settings.embedding_provider}
               onValueChange={(value) => {
+                const models = embeddingModels[value as keyof typeof embeddingModels];
                 setSettings({
                   ...settings,
                   embedding_provider: value,
-                  embedding_model: embeddingModels[value as keyof typeof embeddingModels][0].value
+                  embedding_model: models?.[0]?.value || ''
                 });
               }}
             >
@@ -198,11 +200,11 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {embeddingModels[settings.embedding_provider as keyof typeof embeddingModels].map((model) => (
+                {embeddingModels[settings.embedding_provider as keyof typeof embeddingModels]?.map((model) => (
                   <SelectItem key={model.value} value={model.value}>
                     {model.label}
                   </SelectItem>
-                ))}
+                )) || []}
               </SelectContent>
             </Select>
           </div>
