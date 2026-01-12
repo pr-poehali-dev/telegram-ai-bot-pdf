@@ -1,0 +1,25 @@
+{
+  "tests": [
+    {
+      "name": "Process payment notification",
+      "method": "POST",
+      "body": {
+        "event": "payment.succeeded",
+        "object": {
+          "id": "test-payment-123",
+          "status": "succeeded",
+          "amount": {
+            "value": "1000.00",
+            "currency": "RUB"
+          },
+          "description": "Test payment"
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "ok": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
