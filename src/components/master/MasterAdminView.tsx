@@ -347,7 +347,7 @@ const MasterAdminView = () => {
         />
       </div>
 
-      <TenantsListTable tenants={tenants} />
+      <TenantsListTable tenants={tenants} onUpdate={loadTenants} />
 
       <AdminUsersPanel />
     </div>

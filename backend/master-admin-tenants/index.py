@@ -117,6 +117,9 @@ def handler(event: dict, context) -> dict:
             updates = []
             params = []
 
+            if 'slug' in body:
+                updates.append('slug = %s')
+                params.append(body['slug'])
             if body.get('name'):
                 updates.append('name = %s')
                 params.append(body['name'])
