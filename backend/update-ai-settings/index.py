@@ -66,14 +66,19 @@ def handler(event: dict, context) -> dict:
                 'presence_penalty': '0',
                 'max_tokens': 600,
                 'system_priority': 'strict',
-                'creative_mode': 'off'
+                'creative_mode': 'off',
+                'chat_provider': 'deepseek',
+                'chat_model': 'deepseek-chat',
+                'embedding_provider': 'openai',
+                'embedding_model': 'text-embedding-3-small',
+                'system_prompt': 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.'
             }
         
-        # Обновляем только переданные поля
+        # Обновляем переданные поля
         for key, value in settings.items():
             if key in ['temperature', 'top_p', 'frequency_penalty', 'presence_penalty']:
                 ai_settings[key] = str(value)
-            else:
+            elif key in ['chat_provider', 'chat_model', 'embedding_provider', 'embedding_model', 'system_prompt', 'max_tokens', 'system_priority', 'creative_mode', 'model']:
                 ai_settings[key] = value
         
         ai_settings_json = json.dumps(ai_settings)
