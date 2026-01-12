@@ -119,37 +119,6 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AiSettingsCard />
         <PageSettingsCard />
-        <Card className="shadow-xl">
-          <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">
-            <CardTitle className="flex items-center gap-2">
-              <Icon name="Upload" size={20} />
-              Загрузка документов
-            </CardTitle>
-            <CardDescription>Добавьте PDF с информацией об отеле</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <label htmlFor="file-upload" className="cursor-pointer">
-              <div className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-primary hover:bg-blue-50/50 transition-all group">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Icon name={isLoading ? 'Loader2' : 'Upload'} size={24} className={`text-primary ${isLoading ? 'animate-spin' : ''}`} />
-                </div>
-                <p className="font-medium text-slate-900 mb-1">
-                  {isLoading ? 'Загрузка...' : 'Выберите PDF файлы'}
-                </p>
-                <p className="text-sm text-slate-600">можно несколько одновременно</p>
-              </div>
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf"
-              multiple
-              className="hidden"
-              onChange={onFileUpload}
-              disabled={isLoading}
-            />
-          </CardContent>
-        </Card>
       </div>
 
       <ChatStatsCard />
@@ -192,6 +161,28 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
             </div>
           </div>
         </CardHeader>
+        <CardContent className="pt-6 pb-4">
+          <label htmlFor="file-upload" className="cursor-pointer">
+            <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-primary hover:bg-blue-50/50 transition-all group">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                <Icon name={isLoading ? 'Loader2' : 'Upload'} size={20} className={`text-primary ${isLoading ? 'animate-spin' : ''}`} />
+              </div>
+              <p className="font-medium text-slate-900 mb-1">
+                {isLoading ? 'Загрузка...' : 'Выберите PDF файлы'}
+              </p>
+              <p className="text-sm text-slate-600">можно несколько одновременно</p>
+            </div>
+          </label>
+          <input
+            id="file-upload"
+            type="file"
+            accept=".pdf"
+            multiple
+            className="hidden"
+            onChange={onFileUpload}
+            disabled={isLoading}
+          />
+        </CardContent>
         <CardContent className="p-0">
           <ScrollArea className="h-[320px]">
             {filteredDocuments.length === 0 ? (
