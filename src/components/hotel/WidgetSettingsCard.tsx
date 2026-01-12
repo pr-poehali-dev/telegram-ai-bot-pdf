@@ -87,7 +87,17 @@ const WidgetSettingsCard = () => {
   };
 
   const generateWidgetCode = () => {
-    const chatUrl = settings.chat_url || 'https://p56134400.poehali.dev';
+    let chatUrl = settings.chat_url;
+    
+    if (!chatUrl) {
+      const currentDomain = window.location.hostname;
+      
+      if (currentDomain.startsWith('admin.')) {
+        chatUrl = `${window.location.protocol}//${currentDomain.replace('admin.', '')}`;
+      } else {
+        chatUrl = window.location.origin;
+      }
+    }
     
     return `<!-- AI Bot Widget - Вставьте этот код перед закрывающим тегом </body> -->
 <script>
@@ -343,14 +353,14 @@ const WidgetSettingsCard = () => {
               <h3 className="font-semibold text-sm">Дополнительно</h3>
 
               <div className="space-y-2">
-                <Label>URL чата</Label>
+                <Label>URL чата (опционально)</Label>
                 <Input
                   value={settings.chat_url || ''}
                   onChange={(e) => setSettings({ ...settings, chat_url: e.target.value || null })}
-                  placeholder="https://p56134400.poehali.dev"
+                  placeholder="https://yourdomain.com"
                 />
                 <p className="text-xs text-slate-500">
-                  Укажите URL вашего сайта с чатом. Если пусто — используется p56134400.poehali.dev (текущий проект).
+                  Оставьте пустым для автоопределения на основе текущего домена. Если админка на admin.domain.com, виджет будет указывать на domain.com.
                 </p>
               </div>
 
