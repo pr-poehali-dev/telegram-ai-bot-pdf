@@ -15,6 +15,7 @@ interface GateLog {
   context_len: number;
   overlap: number | null;
   key_tokens: number | null;
+  top_k_used: number | null;
   created_at: string;
 }
 
@@ -26,6 +27,7 @@ interface GateStats {
   by_reason: Record<string, number>;
   by_query_type: Record<string, number>;
   by_lang: Record<string, number>;
+  by_top_k: Record<string, number>;
 }
 
 const QualityGateStatsCard = () => {
@@ -124,7 +126,7 @@ const QualityGateStatsCard = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <h4 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
                   <Icon name="AlertCircle" size={16} />
@@ -164,6 +166,21 @@ const QualityGateStatsCard = () => {
                   {Object.entries(stats.by_lang).map(([lang, count]) => (
                     <div key={lang} className="flex justify-between items-center text-sm">
                       <span className="text-slate-600">{getLangLabel(lang)}</span>
+                      <span className="font-medium text-slate-900">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
+                  <Icon name="Layers" size={16} />
+                  По top_k
+                </h4>
+                <div className="space-y-2">
+                  {Object.entries(stats.by_top_k).map(([topK, count]) => (
+                    <div key={topK} className="flex justify-between items-center text-sm">
+                      <span className="text-slate-600">top_k={topK}</span>
                       <span className="font-medium text-slate-900">{count}</span>
                     </div>
                   ))}
@@ -224,6 +241,12 @@ const QualityGateStatsCard = () => {
                       <span className="flex items-center gap-1">
                         <Icon name="Hash" size={12} />
                         Tokens: {log.key_tokens}
+                      </span>
+                    )}
+                    {log.top_k_used !== null && (
+                      <span className="flex items-center gap-1">
+                        <Icon name="Layers" size={12} />
+                        top_k: {log.top_k_used}
                       </span>
                     )}
                   </div>

@@ -70,8 +70,17 @@ def handler(event: dict, context) -> dict:
         by_lang = {row[0]: int(row[1]) for row in cur.fetchall()}
 
         cur.execute("""
+            SELECT top_k_used, COUNT(*) 
+            FROM t_p56134400_telegram_ai_bot_pdf.quality_gate_logs
+            WHERE top_k_used IS NOT NULL
+            GROUP BY top_k_used
+            ORDER BY top_k_used
+        """)
+        by_top_k = {int(row[0]): int(row[1]) for row in cur.fetchall()}
+
+        cur.execute("""
             SELECT id, user_message, context_ok, gate_reason, query_type, 
-                   lang, best_similarity, context_len, overlap, key_tokens, created_at
+                   lang, best_similarity, context_len, overlap, key_tokens, top_k_used, created_at
             FROM t_p56134400_telegram_ai_bot_pdf.quality_gate_logs
             ORDER BY created_at DESC
             LIMIT 50
@@ -90,7 +99,8 @@ def handler(event: dict, context) -> dict:
                 'context_len': row[7],
                 'overlap': float(row[8]) if row[8] is not None else None,
                 'key_tokens': row[9],
-                'created_at': row[10].isoformat() if row[10] else None
+                'top_k_used': row[10],
+                'created_at': row[11].isoformat() if row[11] else None
             })
 
         cur.close()
@@ -107,7 +117,8 @@ def handler(event: dict, context) -> dict:
                     'pass_rate': pass_rate,
                     'by_reason': by_reason,
                     'by_query_type': by_query_type,
-                    'by_lang': by_lang
+                    'by_lang': by_lang,
+                    'by_top_k': by_top_k
                 },
                 'recent_logs': recent_logs
             }),

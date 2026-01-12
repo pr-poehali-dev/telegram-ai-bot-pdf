@@ -8,8 +8,14 @@
         "stats": {
           "total": "number",
           "passed": "number",
-          "failed": "number"
-        }
+          "failed": "number",
+          "pass_rate": "number",
+          "by_reason": "object",
+          "by_query_type": "object",
+          "by_lang": "object",
+          "by_top_k": "object"
+        },
+        "recent_logs": "array"
       },
       "bodyMatcher": "partial"
     }

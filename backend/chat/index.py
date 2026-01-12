@@ -1,8 +1,20 @@
 import json
 import os
 import psycopg2
+import hashlib
 from datetime import datetime
-from quality_gate import build_context_with_scores, quality_gate, compose_system
+from quality_gate import (
+    build_context_with_scores, 
+    quality_gate, 
+    compose_system,
+    rag_debug_log,
+    low_overlap_rate,
+    update_low_overlap_stats,
+    RAG_TOPK_DEFAULT,
+    RAG_TOPK_FALLBACK,
+    RAG_LOW_OVERLAP_THRESHOLD,
+    RAG_LOW_OVERLAP_START_TOPK5
+)
 
 def handler(event: dict, context) -> dict:
     """AI чат с поиском информации в документах"""
@@ -136,8 +148,56 @@ def handler(event: dict, context) -> dict:
                     similarity = cosine_similarity(query_embedding, chunk_embedding)
                     scored_chunks.append((chunk_text, similarity))
 
-                context, sims = build_context_with_scores(scored_chunks, top_k=3)
+                request_id = context.request_id if hasattr(context, 'request_id') else 'unknown'
+                query_hash = hashlib.sha256(user_message.encode()).hexdigest()[:12]
+                
+                overlap_rate = low_overlap_rate()
+                start_top_k = RAG_TOPK_FALLBACK if (RAG_LOW_OVERLAP_START_TOPK5 and overlap_rate >= RAG_LOW_OVERLAP_THRESHOLD) else RAG_TOPK_DEFAULT
+                
+                context, sims = build_context_with_scores(scored_chunks, top_k=start_top_k)
                 context_ok, gate_reason, gate_debug = quality_gate(user_message, context, sims)
+                
+                gate_debug['top_k_used'] = start_top_k
+                gate_debug['overlap_rate'] = overlap_rate
+                
+                rag_debug_log({
+                    'event': 'rag_gate',
+                    'request_id': request_id,
+                    'query_hash': query_hash,
+                    'timestamp': datetime.utcnow().isoformat(),
+                    'attempt': 1,
+                    'top_k': start_top_k,
+                    'ok': context_ok,
+                    'reason': gate_reason,
+                    'metrics': gate_debug
+                })
+                
+                if 'low_overlap' in gate_reason and start_top_k < RAG_TOPK_FALLBACK:
+                    context2, sims2 = build_context_with_scores(scored_chunks, top_k=RAG_TOPK_FALLBACK)
+                    context_ok2, gate_reason2, gate_debug2 = quality_gate(user_message, context2, sims2)
+                    
+                    gate_debug2['top_k_used'] = RAG_TOPK_FALLBACK
+                    gate_debug2['overlap_rate'] = overlap_rate
+                    
+                    rag_debug_log({
+                        'event': 'rag_gate_fallback',
+                        'request_id': request_id,
+                        'query_hash': query_hash,
+                        'timestamp': datetime.utcnow().isoformat(),
+                        'attempt': 2,
+                        'top_k': RAG_TOPK_FALLBACK,
+                        'ok': context_ok2,
+                        'reason': gate_reason2,
+                        'metrics': gate_debug2
+                    })
+                    
+                    context = context2
+                    sims = sims2
+                    context_ok = context_ok2
+                    gate_reason = gate_reason2
+                    gate_debug = gate_debug2
+                
+                update_low_overlap_stats('low_overlap' in gate_reason)
             else:
                 context = ""
                 context_ok = False
@@ -166,8 +226,8 @@ def handler(event: dict, context) -> dict:
         cur.execute("""
             INSERT INTO t_p56134400_telegram_ai_bot_pdf.quality_gate_logs 
             (user_message, context_ok, gate_reason, query_type, lang, 
-             best_similarity, context_len, overlap, key_tokens)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+             best_similarity, context_len, overlap, key_tokens, top_k_used)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
             user_message,
             context_ok,
@@ -177,7 +237,8 @@ def handler(event: dict, context) -> dict:
             gate_debug.get('best_similarity'),
             gate_debug.get('context_len'),
             gate_debug.get('overlap'),
-            gate_debug.get('key_tokens')
+            gate_debug.get('key_tokens'),
+            gate_debug.get('top_k_used', 3)
         ))
         
         conn.commit()

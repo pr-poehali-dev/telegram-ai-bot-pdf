@@ -1,5 +1,10 @@
 import re
+import os
+import json
+import hashlib
+from collections import deque
 from typing import List, Dict, Tuple
+from datetime import datetime
 
 STOPWORDS_RU = {
     "и","в","во","на","по","к","ко","с","со","у","из","за","для","о","об","от","до","или",
@@ -20,6 +25,28 @@ GATE_THRESHOLDS = {
     "services":{"min_len": 550, "min_sim": 0.32, "min_overlap_ru": 0.18, "min_overlap_en": 0.14},
     "default": {"min_len": 650, "min_sim": 0.34, "min_overlap_ru": 0.18, "min_overlap_en": 0.14},
 }
+
+RAG_DEBUG = os.environ.get('RAG_DEBUG', 'false').lower() == 'true'
+RAG_TOPK_DEFAULT = int(os.environ.get('RAG_TOPK_DEFAULT', '3'))
+RAG_TOPK_FALLBACK = int(os.environ.get('RAG_TOPK_FALLBACK', '5'))
+RAG_LOW_OVERLAP_WINDOW = int(os.environ.get('RAG_LOW_OVERLAP_WINDOW', '50'))
+RAG_LOW_OVERLAP_THRESHOLD = float(os.environ.get('RAG_LOW_OVERLAP_THRESHOLD', '0.25'))
+RAG_LOW_OVERLAP_START_TOPK5 = os.environ.get('RAG_LOW_OVERLAP_START_TOPK5', 'true').lower() == 'true'
+
+low_overlap_window = deque(maxlen=RAG_LOW_OVERLAP_WINDOW)
+
+def rag_debug_log(event: dict):
+    if not RAG_DEBUG:
+        return
+    print(json.dumps(event, ensure_ascii=False))
+
+def low_overlap_rate() -> float:
+    if len(low_overlap_window) == 0:
+        return 0.0
+    return sum(low_overlap_window) / len(low_overlap_window)
+
+def update_low_overlap_stats(is_low_overlap: bool):
+    low_overlap_window.append(1 if is_low_overlap else 0)
 
 def detect_lang_simple(text: str) -> str:
     cyr = len(re.findall(r"[А-Яа-яЁё]", text))
