@@ -13,6 +13,9 @@ interface AdminLoginFormProps {
 const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockoutMinutes, setLockoutMinutes] = useState(0);
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,13 +43,32 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
 
       if (response.ok && data.success) {
         localStorage.setItem('adminToken', data.token);
+        setAttemptsLeft(null);
+        setIsLocked(false);
         toast({
           title: 'Успешно!',
           description: 'Добро пожаловать в админку'
         });
         onLoginSuccess();
+      } else if (response.status === 429) {
+        setIsLocked(true);
+        setLockoutMinutes(data.remainingMinutes || 15);
+        toast({
+          title: 'Доступ заблокирован',
+          description: data.error || 'Слишком много попыток входа',
+          variant: 'destructive'
+        });
       } else {
-        throw new Error(data.error || 'Неверный пароль');
+        setAttemptsLeft(data.attemptsLeft ?? null);
+        const message = data.attemptsLeft !== undefined && data.attemptsLeft > 0
+          ? `${data.error}. Осталось попыток: ${data.attemptsLeft}`
+          : data.error || 'Неверный пароль';
+        
+        toast({
+          title: 'Ошибка входа',
+          description: message,
+          variant: 'destructive'
+        });
       }
     } catch (error: any) {
       toast({
@@ -88,9 +110,34 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
               />
             </div>
 
+            {isLocked && (
+              <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                <div className="flex items-start gap-2">
+                  <Icon name="ShieldAlert" size={20} className="text-red-600 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-red-900">Доступ временно заблокирован</p>
+                    <p className="text-sm text-red-700 mt-1">
+                      Слишком много неудачных попыток входа. Попробуйте снова через {lockoutMinutes} минут.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {attemptsLeft !== null && attemptsLeft > 0 && (
+              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="flex items-center gap-2">
+                  <Icon name="AlertTriangle" size={18} className="text-orange-600" />
+                  <p className="text-sm text-orange-800">
+                    Осталось попыток: <span className="font-bold">{attemptsLeft}</span>
+                  </p>
+                </div>
+              </div>
+            )}
+
             <Button
               type="submit"
-              disabled={isLoading || !password.trim()}
+              disabled={isLoading || !password.trim() || isLocked}
               className="w-full h-12 text-base"
             >
               {isLoading ? (
@@ -110,9 +157,10 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
             <div className="flex items-start gap-2">
               <Icon name="Info" size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-blue-800">
-                Если вы забыли пароль, обратитесь к администратору системы для его восстановления
-              </p>
+              <div className="text-xs text-blue-800 space-y-1">
+                <p>Если вы забыли пароль, обратитесь к администратору системы</p>
+                <p className="font-medium">Защита от брутфорса: максимум 5 попыток за 10 минут</p>
+              </div>
             </div>
           </div>
         </CardContent>
