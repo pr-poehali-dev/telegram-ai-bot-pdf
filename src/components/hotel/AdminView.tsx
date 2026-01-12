@@ -37,6 +37,15 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
     });
   }, [documents, selectedCategory, selectedStatus]);
 
+  const scrollAreaHeight = useMemo(() => {
+    const count = filteredDocuments.length;
+    if (count === 0) return 'h-[200px]';
+    if (count <= 3) return 'h-[180px]';
+    if (count <= 6) return 'h-[360px]';
+    if (count <= 12) return 'h-[540px]';
+    return 'h-[720px]';
+  }, [filteredDocuments.length]);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -184,7 +193,7 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
           />
         </CardContent>
         <CardContent className="p-0">
-          <ScrollArea className="h-[calc(100vh-600px)] min-h-[400px] max-h-[800px]">
+          <ScrollArea className={scrollAreaHeight}>
             {filteredDocuments.length === 0 ? (
               <div className="p-8 text-center text-slate-500">
                 <Icon name="FileText" size={48} className="mx-auto mb-3 opacity-30" />
