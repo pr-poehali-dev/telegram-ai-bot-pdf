@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "Test admin auth",
+      "method": "POST",
+      "body": {
+        "password": "admin123"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "token": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

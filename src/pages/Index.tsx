@@ -4,10 +4,12 @@ import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import GuestView from '@/components/hotel/GuestView';
 import AdminView from '@/components/hotel/AdminView';
+import AdminLoginForm from '@/components/hotel/AdminLoginForm';
 import { Message, Document, BACKEND_URLS } from '@/components/hotel/types';
 
 const Index = () => {
   const [view, setView] = useState<'guest' | 'admin'>('guest');
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { 
       id: '1', 
@@ -23,10 +25,17 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (view === 'admin') {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      setIsAdminAuthenticated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view === 'admin' && isAdminAuthenticated) {
       loadDocuments();
     }
-  }, [view]);
+  }, [view, isAdminAuthenticated]);
 
   const loadDocuments = async () => {
     try {
@@ -231,6 +240,25 @@ const Index = () => {
     }
   };
 
+  const handleAdminLoginSuccess = () => {
+    setIsAdminAuthenticated(true);
+    setView('admin');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setIsAdminAuthenticated(false);
+    setView('guest');
+    toast({
+      title: 'Выход выполнен',
+      description: 'Вы вышли из админки'
+    });
+  };
+
+  if (view === 'admin' && !isAdminAuthenticated) {
+    return <AdminLoginForm onLoginSuccess={handleAdminLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto p-4 lg:p-8 max-w-6xl">
@@ -245,14 +273,26 @@ const Index = () => {
                 <p className="text-slate-600 text-sm">Виртуальный помощник гостей</p>
               </div>
             </div>
-            <Button 
-              variant={view === 'admin' ? 'default' : 'outline'}
-              onClick={() => setView(view === 'guest' ? 'admin' : 'guest')}
-              className="gap-2"
-            >
-              <Icon name={view === 'admin' ? 'Users' : 'Settings'} size={18} />
-              {view === 'admin' ? 'Для гостей' : 'Админ-панель'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant={view === 'admin' ? 'default' : 'outline'}
+                onClick={() => setView(view === 'guest' ? 'admin' : 'guest')}
+                className="gap-2"
+              >
+                <Icon name={view === 'admin' ? 'Users' : 'Settings'} size={18} />
+                {view === 'admin' ? 'Для гостей' : 'Админ-панель'}
+              </Button>
+              {view === 'admin' && isAdminAuthenticated && (
+                <Button 
+                  variant="ghost"
+                  onClick={handleLogout}
+                  className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Icon name="LogOut" size={18} />
+                  Выйти
+                </Button>
+              )}
+            </div>
           </div>
         </header>
 
