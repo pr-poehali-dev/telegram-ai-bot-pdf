@@ -38,7 +38,15 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
     try {
       const response = await fetch(getSettingsUrl);
       const data = await response.json();
-      setSettings(data);
+      if (data.settings) {
+        setSettings({
+          chat_provider: data.settings.chat_provider || 'deepseek',
+          chat_model: data.settings.chat_model || 'deepseek-chat',
+          embedding_provider: data.settings.embedding_provider || 'openai',
+          embedding_model: data.settings.embedding_model || 'text-embedding-3-small',
+          system_prompt: data.settings.system_prompt || 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.'
+        });
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
     }

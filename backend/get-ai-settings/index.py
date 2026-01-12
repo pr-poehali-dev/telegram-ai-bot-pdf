@@ -49,7 +49,12 @@ def handler(event: dict, context) -> dict:
                 'presence_penalty': float(settings_raw.get('presence_penalty', 0)),
                 'max_tokens': int(settings_raw.get('max_tokens', 600)),
                 'system_priority': settings_raw.get('system_priority', 'strict'),
-                'creative_mode': settings_raw.get('creative_mode', 'off')
+                'creative_mode': settings_raw.get('creative_mode', 'off'),
+                'chat_provider': settings_raw.get('chat_provider', 'deepseek'),
+                'chat_model': settings_raw.get('chat_model', 'deepseek-chat'),
+                'embedding_provider': settings_raw.get('embedding_provider', 'openai'),
+                'embedding_model': settings_raw.get('embedding_model', 'text-embedding-3-small'),
+                'system_prompt': settings_raw.get('system_prompt', 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.')
             }
         else:
             settings = {
@@ -60,7 +65,12 @@ def handler(event: dict, context) -> dict:
                 'presence_penalty': 0,
                 'max_tokens': 600,
                 'system_priority': 'strict',
-                'creative_mode': 'off'
+                'creative_mode': 'off',
+                'chat_provider': 'deepseek',
+                'chat_model': 'deepseek-chat',
+                'embedding_provider': 'openai',
+                'embedding_model': 'text-embedding-3-small',
+                'system_prompt': 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.'
             }
 
         cur.close()
