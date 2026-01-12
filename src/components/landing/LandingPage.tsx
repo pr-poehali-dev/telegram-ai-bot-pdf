@@ -315,20 +315,50 @@ const LandingPage = () => {
 
       {/* Footer */}
       <div className="bg-slate-900 text-white py-12">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-slate-400 mb-4">
-            © 2026 AI-консьерж. Все права защищены.
-          </p>
-          <div className="flex gap-6 justify-center text-slate-400">
-            <a href="#" className="hover:text-white transition-colors">
-              Политика конфиденциальности
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Публичная оферта
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Контакты
-            </a>
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Контакты</h3>
+              <div className="space-y-2 text-slate-400">
+                <a href="mailto:info@298100.ru" className="block hover:text-white transition-colors">
+                  <Icon name="Mail" size={16} className="inline mr-2" />
+                  info@298100.ru
+                </a>
+                <a href="tel:+79787236035" className="block hover:text-white transition-colors">
+                  <Icon name="Phone" size={16} className="inline mr-2" />
+                  +7 (978) 723-60-35
+                </a>
+                <p className="flex items-start">
+                  <Icon name="MapPin" size={16} className="inline mr-2 mt-1 flex-shrink-0" />
+                  <span>Республика Крым, г. Феодосия,<br />ул. Механизаторов, д 17</span>
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Реквизиты</h3>
+              <div className="space-y-1 text-slate-400">
+                <p className="font-medium text-white">Плательщик НПД</p>
+                <p>Прохоров Сергей Валериевич</p>
+                <p>ИНН: 910800040469</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Документы</h3>
+              <div className="space-y-2 text-slate-400">
+                <a href="#" className="block hover:text-white transition-colors">
+                  Политика конфиденциальности
+                </a>
+                <a href="#" className="block hover:text-white transition-colors">
+                  Публичная оферта
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-800 pt-8 text-center text-slate-400">
+            <p>© 2026 AI-консьерж. Все права защищены.</p>
           </div>
         </div>
       </div>
