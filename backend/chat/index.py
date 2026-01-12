@@ -79,6 +79,7 @@ def handler(event: dict, context) -> dict:
             embedding_provider = settings.get('embedding_provider', 'openai')
             embedding_model = settings.get('embedding_model', 'text-embedding-3-small')
             system_prompt_template = settings.get('system_prompt', 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.')
+            print(f"DEBUG SETTINGS: embedding_provider={embedding_provider}, embedding_model={embedding_model}")
         else:
             ai_model = 'yandexgpt'
             ai_temperature = 0.15
