@@ -1,15 +1,37 @@
 {
   "tests": [
     {
-      "name": "Test admin auth",
+      "name": "Test super admin auth",
       "method": "POST",
       "body": {
+        "username": "superadmin",
         "password": "admin123"
       },
       "expectedStatus": 200,
       "expectedBody": {
         "success": true,
-        "token": "string"
+        "token": "string",
+        "user": {
+          "role": "super_admin"
+        }
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test tenant admin auth",
+      "method": "POST",
+      "body": {
+        "username": "hotel_admin",
+        "password": "hotel123"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "token": "string",
+        "user": {
+          "role": "tenant_admin",
+          "tenant_id": 1
+        }
       },
       "bodyMatcher": "partial"
     }

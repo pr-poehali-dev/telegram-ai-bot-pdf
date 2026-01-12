@@ -1,15 +1,11 @@
 {
   "tests": [
     {
-      "name": "Test get AI settings",
+      "name": "Test get AI settings - unauthorized",
       "method": "GET",
-      "expectedStatus": 200,
+      "expectedStatus": 401,
       "expectedBody": {
-        "settings": {
-          "model": "string",
-          "temperature": "number",
-          "max_tokens": "number"
-        }
+        "error": "Authorization required"
       },
       "bodyMatcher": "partial"
     }

@@ -2,10 +2,11 @@ import json
 import os
 import hashlib
 import psycopg2
+import jwt
 from datetime import datetime, timedelta
 
 def handler(event: dict, context) -> dict:
-    """Авторизация администратора с защитой от брутфорса"""
+    """Авторизация администратора с JWT токенами и разделением прав доступа"""
     method = event.get('httpMethod', 'POST')
 
     if method == 'OPTIONS':
@@ -30,14 +31,15 @@ def handler(event: dict, context) -> dict:
 
     try:
         body = json.loads(event.get('body', '{}'))
+        username = body.get('username', '')
         password = body.get('password', '')
         ip_address = event.get('requestContext', {}).get('identity', {}).get('sourceIp', 'unknown')
 
-        if not password:
+        if not username or not password:
             return {
                 'statusCode': 400,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'password required'}),
+                'body': json.dumps({'error': 'username and password required'}),
                 'isBase64Encoded': False
             }
 
@@ -95,22 +97,43 @@ def handler(event: dict, context) -> dict:
                         'isBase64Encoded': False
                     }
 
-        admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
         password_hash = hashlib.sha256(password.encode()).hexdigest()
-        admin_hash = hashlib.sha256(admin_password.encode()).hexdigest()
-
-        if password_hash == admin_hash:
+        
+        cur.execute("""
+            SELECT id, username, password_hash, role, tenant_id, is_active
+            FROM t_p56134400_telegram_ai_bot_pdf.admin_users
+            WHERE username = %s AND is_active = true
+        """, (username,))
+        
+        admin_user = cur.fetchone()
+        
+        if admin_user and admin_user[2] == password_hash:
+            user_id, db_username, _, role, tenant_id, _ = admin_user
+            
+            cur.execute("""
+                UPDATE t_p56134400_telegram_ai_bot_pdf.admin_users
+                SET last_login = NOW()
+                WHERE id = %s
+            """, (user_id,))
+            
             cur.execute("""
                 INSERT INTO t_p56134400_telegram_ai_bot_pdf.login_attempts (ip_address, success)
                 VALUES (%s, true)
             """, (ip_address,))
             
-            cur.execute("""
-                DELETE FROM t_p56134400_telegram_ai_bot_pdf.login_attempts 
-                WHERE ip_address = %s AND success = false
-            """, (ip_address,))
-            
             conn.commit()
+            
+            jwt_secret = os.environ.get('JWT_SECRET', 'default-jwt-secret-change-in-production')
+            token_payload = {
+                'user_id': user_id,
+                'username': db_username,
+                'role': role,
+                'tenant_id': tenant_id,
+                'exp': datetime.utcnow() + timedelta(days=7)
+            }
+            
+            jwt_token = jwt.encode(token_payload, jwt_secret, algorithm='HS256')
+            
             cur.close()
             conn.close()
 
@@ -119,7 +142,13 @@ def handler(event: dict, context) -> dict:
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({
                     'success': True,
-                    'token': password_hash
+                    'token': jwt_token,
+                    'user': {
+                        'id': user_id,
+                        'username': db_username,
+                        'role': role,
+                        'tenant_id': tenant_id
+                    }
                 }),
                 'isBase64Encoded': False
             }
