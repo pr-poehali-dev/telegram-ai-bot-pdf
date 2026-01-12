@@ -162,6 +162,24 @@ def handler(event: dict, context) -> dict:
             INSERT INTO t_p56134400_telegram_ai_bot_pdf.chat_messages (session_id, role, content)
             VALUES (%s, %s, %s)
         """, (session_id, 'user', user_message))
+        
+        cur.execute("""
+            INSERT INTO t_p56134400_telegram_ai_bot_pdf.quality_gate_logs 
+            (user_message, context_ok, gate_reason, query_type, lang, 
+             best_similarity, context_len, overlap, key_tokens)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            user_message,
+            context_ok,
+            gate_reason,
+            gate_debug.get('query_type'),
+            gate_debug.get('lang'),
+            gate_debug.get('best_similarity'),
+            gate_debug.get('context_len'),
+            gate_debug.get('overlap'),
+            gate_debug.get('key_tokens')
+        ))
+        
         conn.commit()
         
         system_prompt = compose_system(system_prompt_template, context, context_ok)

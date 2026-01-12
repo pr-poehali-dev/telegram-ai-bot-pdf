@@ -8,6 +8,7 @@ import ChatStatsCard from './ChatStatsCard';
 import PageSettingsCard from './PageSettingsCard';
 import WidgetSettingsCard from './WidgetSettingsCard';
 import AiSettingsCard from './AiSettingsCard';
+import QualityGateStatsCard from './QualityGateStatsCard';
 import { Document, BACKEND_URLS } from './types';
 import { useState, useMemo } from 'react';
 
@@ -151,6 +152,8 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
       </div>
 
       <ChatStatsCard />
+
+      <QualityGateStatsCard />
 
       <Card className="shadow-xl">
         <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">

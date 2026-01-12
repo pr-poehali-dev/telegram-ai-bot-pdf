@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "Test get quality gate stats",
+      "method": "GET",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "stats": {
+          "total": "number",
+          "passed": "number",
+          "failed": "number"
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
