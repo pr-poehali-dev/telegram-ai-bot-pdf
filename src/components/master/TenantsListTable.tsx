@@ -79,7 +79,7 @@ const TenantsListTable = ({ tenants, onUpdate }: TenantsListTableProps) => {
       <CardContent>
         <ScrollArea className="h-[400px]">
           <div className="space-y-2">
-            {tenants.map((tenant) => (
+            {(tenants || []).map((tenant) => (
               <div key={tenant.id} className="p-4 border rounded-lg hover:bg-slate-50 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div>

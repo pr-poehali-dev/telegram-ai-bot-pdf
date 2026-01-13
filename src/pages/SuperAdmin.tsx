@@ -217,7 +217,7 @@ const SuperAdmin = () => {
                       <SelectValue placeholder="Выберите клиента из списка" />
                     </SelectTrigger>
                     <SelectContent>
-                      {tenants.map((tenant) => (
+                      {(tenants || []).map((tenant) => (
                         <SelectItem key={tenant.id} value={tenant.slug}>
                           {tenant.name} (/{tenant.slug})
                         </SelectItem>

@@ -42,7 +42,7 @@ export const AdminUsersTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {users.map((user) => (
+        {(users || []).map((user) => (
           <TableRow key={user.id}>
             <TableCell className="font-medium">{user.username}</TableCell>
             <TableCell>{user.email || '—'}</TableCell>

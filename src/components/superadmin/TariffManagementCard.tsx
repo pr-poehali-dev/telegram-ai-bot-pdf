@@ -117,7 +117,7 @@ const TariffManagementCard = () => {
         </CardHeader>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            {tariffs.map((tariff) => (
+            {(tariffs || []).map((tariff) => (
               <div
                 key={tariff.id}
                 className="p-4 border rounded-lg hover:border-primary transition-colors"
