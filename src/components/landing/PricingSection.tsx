@@ -19,25 +19,32 @@ export const PricingSection = ({ onPlanSelect }: PricingSectionProps) => {
               <h3 className="text-2xl font-bold text-slate-900 mb-2">Старт</h3>
               <p className="text-slate-600 mb-4">Для небольших проектов</p>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-slate-900">9 990₽</span>
-                <span className="text-slate-600">/мес</span>
+                <div>
+                  <span className="text-4xl font-bold text-slate-900">9 975₽</span>
+                  <span className="text-slate-600">/мес</span>
+                </div>
+                <div className="text-sm text-slate-500 mt-1">продление 2 000₽/мес</div>
               </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  До 1000 сообщений
+                  Web-чат для сайта
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  До 10 документов
+                  До 10 PDF документов
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  Базовая аналитика
+                  Свой API ключ AI
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  Виджет для сайта
+                  Базовые настройки
+                </li>
+                <li className="flex items-center gap-2 text-slate-500">
+                  <Icon name="X" size={20} className="text-slate-400" />
+                  Без мессенджеров
                 </li>
               </ul>
               <Button className="w-full" variant="outline" onClick={onPlanSelect}>
@@ -56,25 +63,28 @@ export const PricingSection = ({ onPlanSelect }: PricingSectionProps) => {
               </div>
               <p className="text-slate-600 mb-4">Для растущих компаний</p>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-slate-900">24 990₽</span>
-                <span className="text-slate-600">/мес</span>
+                <div>
+                  <span className="text-4xl font-bold text-slate-900">19 990₽</span>
+                  <span className="text-slate-600">/мес</span>
+                </div>
+                <div className="text-sm text-slate-500 mt-1">продление 5 000₽/мес</div>
               </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  До 10 000 сообщений
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <Icon name="Check" size={20} className="text-green-600" />
-                  Неограниченно документов
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <Icon name="Check" size={20} className="text-green-600" />
-                  Полная аналитика
+                  Всё из тарифа Старт
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
                   Telegram интеграция
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <Icon name="Check" size={20} className="text-green-600" />
+                  До 25 PDF документов
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <Icon name="Check" size={20} className="text-green-600" />
+                  Полные настройки AI
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
@@ -89,32 +99,39 @@ export const PricingSection = ({ onPlanSelect }: PricingSectionProps) => {
 
           <Card className="hover:shadow-xl transition-shadow">
             <CardContent className="pt-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Корпоративный</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Премиум</h3>
               <p className="text-slate-600 mb-4">Для крупного бизнеса</p>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-slate-900">от 49 990₽</span>
-                <span className="text-slate-600">/мес</span>
+                <div>
+                  <span className="text-4xl font-bold text-slate-900">49 990₽</span>
+                  <span className="text-slate-600">/мес</span>
+                </div>
+                <div className="text-sm text-slate-500 mt-1">продление 15 000₽/мес</div>
               </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  Безлимитные сообщения
+                  Всё из тарифа Бизнес
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  Мультиязычность
+                  WhatsApp, VK, MAX (опционально)
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  API доступ
+                  Безлимит PDF документов
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  Выделенный сервер
+                  Настройка нашими специалистами
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  Персональный менеджер
+                  Личный менеджер проекта
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <Icon name="Check" size={20} className="text-green-600" />
+                  Кастомизация под задачи
                 </li>
               </ul>
               <Button className="w-full" variant="outline" onClick={onPlanSelect}>

@@ -17,9 +17,9 @@ export const OrderFormSection = () => {
   const [error, setError] = useState('');
 
   const tariffs = {
-    basic: { name: 'Старт', price: 9990, description: 'Старт (9 990₽/мес)' },
-    business: { name: 'Бизнес', price: 24990, description: 'Бизнес (24 990₽/мес)' },
-    enterprise: { name: 'Корпоративный', price: 49990, description: 'Корпоративный (от 49 990₽/мес)' }
+    basic: { name: 'Старт', price: 9975, description: 'Старт (9 975₽/мес)', renewal: 2000 },
+    professional: { name: 'Бизнес', price: 19990, description: 'Бизнес (19 990₽/мес)', renewal: 5000 },
+    enterprise: { name: 'Премиум', price: 49990, description: 'Премиум (49 990₽/мес)', renewal: 15000 }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,9 +128,9 @@ export const OrderFormSection = () => {
                   onChange={(e) => setFormData({ ...formData, tariff: e.target.value })}
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
-                  <option value="basic">{tariffs.basic.description}</option>
-                  <option value="business">{tariffs.business.description}</option>
-                  <option value="enterprise">{tariffs.enterprise.description}</option>
+                  <option value="basic">{tariffs.basic.description} + продление 2000₽/мес</option>
+                  <option value="professional">{tariffs.professional.description} + продление 5000₽/мес</option>
+                  <option value="enterprise">{tariffs.enterprise.description} + продление 15000₽/мес</option>
                 </select>
               </div>
               <div>

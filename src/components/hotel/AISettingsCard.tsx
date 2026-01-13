@@ -146,7 +146,29 @@ const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardPro
         </CardTitle>
         <CardDescription>Выбор провайдеров для чата и эмбеддингов (OpenAI, DeepSeek, YandexGPT)</CardDescription>
       </CardHeader>
-      <CardContent className="pt-6 space-y-6">
+      <CardContent className="pt-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-2">
+            <Icon name="Info" size={16} className="text-blue-600 mt-0.5" />
+            <div className="text-sm text-blue-900">
+              <p className="font-medium mb-2">Настройка API ключей:</p>
+              <ol className="list-decimal list-inside space-y-2 text-blue-800">
+                <li>
+                  <strong>YandexGPT:</strong> Добавьте секреты <code className="bg-blue-100 px-1 rounded">YANDEX_API_KEY</code> (ваш API ключ) и <code className="bg-blue-100 px-1 rounded">YANDEX_FOLDER_ID</code> (ID каталога) через кнопку "Секреты" справа вверху
+                </li>
+                <li>
+                  <strong>OpenAI:</strong> Добавьте секрет <code className="bg-blue-100 px-1 rounded">OPENAI_API_KEY</code> с вашим API ключом
+                </li>
+                <li>
+                  <strong>DeepSeek:</strong> Добавьте секрет <code className="bg-blue-100 px-1 rounded">DEEPSEEK_API_KEY</code> с вашим API ключом
+                </li>
+              </ol>
+              <p className="mt-2 text-xs text-blue-700">После добавления секретов выберите нужного провайдера и модель ниже</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardContent className="pt-0 space-y-6">
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-slate-700 mb-2 block">

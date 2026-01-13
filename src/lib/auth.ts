@@ -3,6 +3,7 @@ interface AdminUser {
   username: string;
   role: 'super_admin' | 'tenant_admin';
   tenant_id: number | null;
+  tariff_id?: string | null;
 }
 
 interface DecodedToken {
@@ -48,6 +49,11 @@ export const isSuperAdmin = (): boolean => {
 export const getTenantId = (): number | null => {
   const user = getAdminUser();
   return user?.tenant_id ?? null;
+};
+
+export const getTariffId = (): string | null => {
+  const user = getAdminUser();
+  return user?.tariff_id ?? null;
 };
 
 export const logout = () => {
