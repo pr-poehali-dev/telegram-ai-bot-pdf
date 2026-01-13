@@ -9,7 +9,7 @@ import WidgetSettingsCard from './WidgetSettingsCard';
 import AiSettingsCard from './AiSettingsCard';
 import SubscriptionWidget from './SubscriptionWidget';
 import ApiKeysCard from './ApiKeysCard';
-import AutoMessageSettings from './AutoMessageSettings';
+import MessengerAutoMessages from './MessengerAutoMessages';
 import { DocumentStatsCards } from './DocumentStatsCards';
 import { DocumentsPanel } from './DocumentsPanel';
 import { Document, BACKEND_URLS } from './types';
@@ -167,7 +167,7 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
 
       <WidgetSettingsCard />
 
-      <AutoMessageSettings isSuperAdmin={superAdmin} />
+      <MessengerAutoMessages isSuperAdmin={superAdmin} />
 
       <ChatStatsCard />
 

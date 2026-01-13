@@ -107,7 +107,8 @@ export const BACKEND_URLS = {
   messengerSettings: 'https://functions.poehali.dev/0993895c-dede-469e-94f6-18c2829df143',
   tariffManagement: 'https://functions.poehali.dev/9aaca202-0192-4234-9f65-591df1552960',
   yandexApiValidation: 'https://functions.poehali.dev/d7cc5843-8cc2-4c50-a819-04b1b43b744d',
-  manageApiKeys: 'https://functions.poehali.dev/335a37e0-231e-4ba0-adf3-94f610d1c449'
+  manageApiKeys: 'https://functions.poehali.dev/335a37e0-231e-4ba0-adf3-94f610d1c449',
+  messengerAutoMessages: 'https://functions.poehali.dev/a5c44dff-b325-43e4-9c89-020d5c116178'
 };
 
 export const quickQuestions = [
