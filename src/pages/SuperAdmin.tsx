@@ -15,6 +15,7 @@ import TenantsListTable from '@/components/master/TenantsListTable';
 import AdminUsersPanel from '@/components/master/AdminUsersPanel';
 import MessengersStatusCard from '@/components/master/MessengersStatusCard';
 import CreateTenantWithUserPanel from '@/components/master/CreateTenantWithUserPanel';
+import DefaultSettingsPanel from '@/components/master/DefaultSettingsPanel';
 
 interface CompanyInfo {
   name: string;
@@ -146,6 +147,8 @@ const SuperAdmin = () => {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
+            <DefaultSettingsPanel />
+            
             <Card>
               <CardHeader>
                 <CardTitle>Реквизиты компании</CardTitle>
