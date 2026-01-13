@@ -42,8 +42,8 @@ export const FeaturesSection = () => {
       description: 'Даже в 3 ночи, в выходные, в праздники. Никогда не устаёт, не заболеет, не уйдёт в отпуск',
       bgColor: 'bg-green-100',
       iconColor: 'text-green-600',
-      value: '0₽',
-      valueLabel: 'зарплата'
+      value: '∞',
+      valueLabel: 'клиентов одновременно'
     },
     {
       icon: 'Brain',
@@ -56,12 +56,12 @@ export const FeaturesSection = () => {
     },
     {
       icon: 'MessageSquare',
-      title: 'Все мессенджеры',
-      description: 'Telegram, WhatsApp, VK, сайт — отвечает в любом канале. Один бот — всюду',
+      title: 'Все каналы',
+      description: 'Web-чат, виджет для сайта, Telegram, WhatsApp, VK — отвечает в любом канале. Один бот — всюду',
       bgColor: 'bg-orange-100',
       iconColor: 'text-orange-600',
-      value: '4',
-      valueLabel: 'канала'
+      value: '5',
+      valueLabel: 'каналов'
     },
     {
       icon: 'Shield',

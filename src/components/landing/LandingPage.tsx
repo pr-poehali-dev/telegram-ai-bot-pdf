@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { HeroSection } from './HeroSection';
 import { FeaturesSection } from './FeaturesSection';
-import { VideoSection } from './VideoSection';
 import { HowItWorksSection } from './HowItWorksSection';
 import { CalculatorSection } from './CalculatorSection';
 import { CasesSection } from './CasesSection';
@@ -24,7 +23,6 @@ const LandingPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       <HeroSection onOrderClick={() => scrollToForm('basic')} />
       <FeaturesSection />
-      <VideoSection />
       <HowItWorksSection />
       <CalculatorSection />
       <CasesSection />
