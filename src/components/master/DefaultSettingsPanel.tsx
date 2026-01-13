@@ -79,6 +79,8 @@ const DefaultSettingsPanel = () => {
   const settingLabels: { [key: string]: string } = {
     'default_system_prompt': 'Дефолтный системный промпт',
     'email_template_welcome': 'Шаблон письма приветствия',
+    'email_template_order_customer': 'Письмо клиенту после оплаты',
+    'email_template_order_admin': 'Письмо администратору о новом заказе',
     'smtp_host': 'SMTP сервер',
     'smtp_port': 'SMTP порт',
     'smtp_user': 'SMTP пользователь (email)',
@@ -89,7 +91,9 @@ const DefaultSettingsPanel = () => {
 
   const settingCategories: { [key: string]: string } = {
     'default_system_prompt': 'prompts',
-    'email_template_welcome': 'prompts',
+    'email_template_welcome': 'email_templates',
+    'email_template_order_customer': 'email_templates',
+    'email_template_order_admin': 'email_templates',
     'smtp_host': 'smtp',
     'smtp_port': 'smtp',
     'smtp_user': 'smtp',
@@ -118,7 +122,7 @@ const DefaultSettingsPanel = () => {
       </div>
 
       <div>
-        <h3 className="text-xl font-semibold mb-4">📝 Промпты и шаблоны</h3>
+        <h3 className="text-xl font-semibold mb-4">📝 Системные промпты</h3>
         <div className="space-y-6">
           {Object.keys(settings).filter(key => settingCategories[key] === 'prompts').map(key => (
             <Card key={key}>
@@ -140,6 +144,58 @@ const DefaultSettingsPanel = () => {
                     onChange={(e) => setEditedSettings({ ...editedSettings, [key]: e.target.value })}
                     rows={key === 'default_system_prompt' ? 15 : 8}
                     className="font-mono text-sm"
+                  />
+                </div>
+                <Button
+                  onClick={() => handleSave(key)}
+                  disabled={isSaving || editedSettings[key] === settings[key].value}
+                >
+                  {isSaving ? (
+                    <>
+                      <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                      Сохранение...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Save" className="mr-2" size={16} />
+                      Сохранить
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold mb-4">✉️ Email шаблоны</h3>
+        <div className="space-y-6">
+          {Object.keys(settings).filter(key => settingCategories[key] === 'email_templates').map(key => (
+            <Card key={key}>
+              <CardHeader>
+                <CardTitle>{settingLabels[key] || key}</CardTitle>
+                <CardDescription>
+                  {key === 'email_template_order_customer' && 'HTML шаблон письма, которое получает клиент после успешной оплаты. Переменные: {name}, {email}, {tariff}, {amount}, {tenant_slug}, {username}, {password}, {login_url}'}
+                  {key === 'email_template_order_admin' && 'HTML шаблон письма для администратора о новом заказе. Переменные: {name}, {email}, {phone}, {tariff}, {amount}, {payment_id}, {tenant_slug}'}
+                  {key === 'email_template_welcome' && settings[key].description}
+                </CardDescription>
+                {settings[key].updated_at && (
+                  <p className="text-xs text-muted-foreground">
+                    Обновлено: {new Date(settings[key].updated_at).toLocaleString('ru-RU')}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor={key}>HTML шаблон</Label>
+                  <Textarea
+                    id={key}
+                    value={editedSettings[key] || ''}
+                    onChange={(e) => setEditedSettings({ ...editedSettings, [key]: e.target.value })}
+                    rows={12}
+                    className="font-mono text-sm"
+                    placeholder="<html>...</html>"
                   />
                 </div>
                 <Button
