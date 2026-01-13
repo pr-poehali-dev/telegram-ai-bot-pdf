@@ -1,8 +1,13 @@
 import json
 import os
+import sys
 import psycopg2
 import hashlib
 from datetime import datetime
+
+sys.path.append('/function/code')
+from api_keys_helper import get_tenant_api_key
+
 from quality_gate import (
     build_context_with_scores, 
     quality_gate, 
@@ -458,8 +463,12 @@ MINI-SYSTEM: РАСЧЁТ ЦЕН (используй только для зап�
         try:
             if embedding_provider == 'yandexgpt':
                 import requests
-                yandex_api_key = os.environ.get('YANDEXGPT_API_KEY')
-                yandex_folder_id = os.environ.get('YANDEXGPT_FOLDER_ID')
+                yandex_api_key, error = get_tenant_api_key(tenant_id, 'yandexgpt', 'api_key')
+                if error:
+                    return error
+                yandex_folder_id, error = get_tenant_api_key(tenant_id, 'yandexgpt', 'folder_id')
+                if error:
+                    return error
                 
                 # Для запросов пользователей всегда используем text-search-query
                 emb_response = requests.post(
@@ -476,9 +485,11 @@ MINI-SYSTEM: РАСЧЁТ ЦЕН (используй только для зап�
                 emb_data = emb_response.json()
                 query_embedding = emb_data['embedding']
             elif embedding_provider == 'openrouter':
-                # OpenRouter для embeddings (через OpenAI-совместимый API)
+                openrouter_key, error = get_tenant_api_key(tenant_id, 'openrouter', 'api_key')
+                if error:
+                    return error
                 embedding_client = OpenAI(
-                    api_key=os.environ.get('OPENROUTER_API_KEY'),
+                    api_key=openrouter_key,
                     base_url="https://openrouter.ai/api/v1"
                 )
                 query_embedding_response = embedding_client.embeddings.create(
@@ -487,8 +498,10 @@ MINI-SYSTEM: РАСЧЁТ ЦЕН (используй только для зап�
                 )
                 query_embedding = query_embedding_response.data[0].embedding
             else:
-                # Для других провайдеров используем стандартный OpenAI API
-                embedding_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+                openai_key, error = get_tenant_api_key(tenant_id, 'openai', 'api_key')
+                if error:
+                    return error
+                embedding_client = OpenAI(api_key=openai_key)
                 query_embedding_response = embedding_client.embeddings.create(
                     model=embedding_model,
                     input=user_message
@@ -623,8 +636,12 @@ MINI-SYSTEM: РАСЧЁТ ЦЕН (используй только для зап�
 
         if chat_provider == 'yandexgpt':
             import requests
-            yandex_api_key = os.environ.get('YANDEXGPT_API_KEY')
-            yandex_folder_id = os.environ.get('YANDEXGPT_FOLDER_ID')
+            yandex_api_key, error = get_tenant_api_key(tenant_id, 'yandexgpt', 'api_key')
+            if error:
+                return error
+            yandex_folder_id, error = get_tenant_api_key(tenant_id, 'yandexgpt', 'folder_id')
+            if error:
+                return error
             
             completion_options = {
                 'temperature': ai_temperature,
@@ -649,9 +666,11 @@ MINI-SYSTEM: РАСЧЁТ ЦЕН (используй только для зап�
             yandex_data = yandex_response.json()
             assistant_message = yandex_data['result']['alternatives'][0]['message']['text']
         else:
-            # OpenRouter для всех остальных моделей
+            openrouter_key, error = get_tenant_api_key(tenant_id, 'openrouter', 'api_key')
+            if error:
+                return error
             chat_client = OpenAI(
-                api_key=os.environ.get('OPENROUTER_API_KEY'),
+                api_key=openrouter_key,
                 base_url="https://openrouter.ai/api/v1"
             )
             response = chat_client.chat.completions.create(

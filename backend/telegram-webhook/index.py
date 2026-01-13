@@ -1,6 +1,10 @@
 import json
 import os
+import sys
 import requests
+
+sys.path.append('/function/code')
+from api_keys_helper import get_tenant_api_key
 
 def handler(event: dict, context) -> dict:
     """Webhook для Telegram-бота: принимает сообщения и отвечает через AI-консьержа"""
@@ -50,6 +54,11 @@ def handler(event: dict, context) -> dict:
             }
 
         session_id = f"telegram-{chat_id}"
+        tenant_id = 1
+
+        bot_token, error = get_tenant_api_key(tenant_id, 'telegram', 'bot_token')
+        if error:
+            return error
 
         chat_function_url = 'https://functions.poehali.dev/7b58f4fb-5db0-4f85-bb3b-55bafa4cbf73'
 
@@ -57,7 +66,8 @@ def handler(event: dict, context) -> dict:
             chat_function_url,
             json={
                 'message': user_message,
-                'sessionId': session_id
+                'sessionId': session_id,
+                'tenantId': tenant_id
             },
             headers={'Content-Type': 'application/json'},
             timeout=30
@@ -68,10 +78,6 @@ def handler(event: dict, context) -> dict:
 
         chat_data = chat_response.json()
         ai_message = chat_data.get('message', 'Извините, не могу ответить')
-
-        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-        if not bot_token:
-            raise Exception('TELEGRAM_BOT_TOKEN not configured')
 
         telegram_api_url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
         telegram_response = requests.post(
