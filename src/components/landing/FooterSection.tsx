@@ -33,8 +33,16 @@ export const FooterSection = () => {
                 Политика конфиденциальности
               </Link>
               <Link to="/terms-of-service" className="block hover:text-white transition-colors">
-                Оферта
+                Пользовательское соглашение
               </Link>
+              <a 
+                href="https://max.ru/u/f9LHodD0cOIrknUlAYx1LxuVyfuHRhIq-OHhkpPMbwJ_WcjW4dhTFpEEez0" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block hover:text-white transition-colors"
+              >
+                Хочу такой бот!
+              </a>
             </div>
           </div>
           <div>

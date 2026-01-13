@@ -22,8 +22,8 @@ const TermsOfService = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-3xl">Оферта</CardTitle>
-            <p className="text-sm text-muted-foreground">Публичная оферта на оказание услуг | Дата публикации: 13 января 2026 г.</p>
+            <CardTitle className="text-3xl">Пользовательское соглашение</CardTitle>
+            <p className="text-sm text-muted-foreground">Дата публикации: 13 января 2026 г.</p>
           </CardHeader>
           <CardContent className="prose prose-sm max-w-none space-y-6">
             <section>
