@@ -51,6 +51,8 @@ const AISettingsCard = () => {
         });
         setApiKey('');
         setFolderId('');
+        // Сразу проверяем баланс после успешной валидации
+        checkBalance();
       } else {
         toast({
           title: 'Ошибка валидации',
