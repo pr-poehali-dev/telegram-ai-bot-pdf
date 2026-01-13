@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Get cronjob status",
+      "method": "GET",
+      "path": "/?action=status",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

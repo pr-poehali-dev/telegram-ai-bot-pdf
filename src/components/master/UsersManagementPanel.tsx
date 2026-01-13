@@ -11,6 +11,7 @@ import Icon from '@/components/ui/icon';
 
 const BACKEND_URL = 'https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8';
 const CHECK_SUBSCRIPTIONS_URL = 'https://functions.poehali.dev/2b45e5d6-8138-4bae-9236-237fe424ef95';
+const SETUP_CRONJOB_URL = 'https://functions.poehali.dev/5d34eeb6-9825-4d73-80eb-bc6c1ded58c9';
 
 interface User {
   id: number;
@@ -44,6 +45,8 @@ const UsersManagementPanel = () => {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingSubscriptions, setIsCheckingSubscriptions] = useState(false);
+  const [cronjobStatus, setCronjobStatus] = useState<any>(null);
+  const [isLoadingCronjob, setIsLoadingCronjob] = useState(false);
   const [showExtendDialog, setShowExtendDialog] = useState(false);
   const [showPaymentHistory, setShowPaymentHistory] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
@@ -57,6 +60,7 @@ const UsersManagementPanel = () => {
 
   useEffect(() => {
     loadUsers();
+    loadCronjobStatus();
   }, []);
 
   useEffect(() => {
@@ -215,6 +219,64 @@ const UsersManagementPanel = () => {
     }
   };
 
+  const loadCronjobStatus = async () => {
+    try {
+      const response = await fetch(`${SETUP_CRONJOB_URL}?action=status`);
+      const data = await response.json();
+      if (response.ok) {
+        setCronjobStatus(data);
+      }
+    } catch (error) {
+      console.error('Error loading cronjob status:', error);
+    }
+  };
+
+  const handleSetupCronjob = async () => {
+    setIsLoadingCronjob(true);
+    try {
+      const response = await fetch(`${SETUP_CRONJOB_URL}?action=create`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({ 
+          title: 'Успешно', 
+          description: 'Автоматическая проверка подписок настроена! Задание будет выполняться ежедневно в 9:00 МСК' 
+        });
+        loadCronjobStatus();
+      } else {
+        throw new Error(data.error || 'Failed to setup cronjob');
+      }
+    } catch (error: any) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsLoadingCronjob(false);
+    }
+  };
+
+  const handleStopCronjob = async () => {
+    if (!cronjobStatus?.job?.jobId) return;
+    
+    setIsLoadingCronjob(true);
+    try {
+      const response = await fetch(`${SETUP_CRONJOB_URL}?action=delete&job_id=${cronjobStatus.job.jobId}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({ 
+          title: 'Успешно', 
+          description: 'Автоматическая проверка подписок остановлена' 
+        });
+        loadCronjobStatus();
+      } else {
+        throw new Error(data.error || 'Failed to stop cronjob');
+      }
+    } catch (error: any) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsLoadingCronjob(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -224,23 +286,62 @@ const UsersManagementPanel = () => {
             Пользователи, созданные после оплаты подписки ({filteredUsers.length} из {users.length})
           </p>
         </div>
-        <Button 
-          onClick={handleCheckSubscriptions} 
-          disabled={isCheckingSubscriptions}
-          variant="outline"
-        >
-          {isCheckingSubscriptions ? (
-            <>
-              <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
-              Проверка...
-            </>
+        <div className="flex gap-2">
+          {cronjobStatus?.exists ? (
+            <Button 
+              onClick={handleStopCronjob} 
+              disabled={isLoadingCronjob}
+              variant="destructive"
+            >
+              {isLoadingCronjob ? (
+                <>
+                  <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
+                  Остановка...
+                </>
+              ) : (
+                <>
+                  <Icon name="StopCircle" className="mr-2" size={16} />
+                  Остановить автопроверку
+                </>
+              )}
+            </Button>
           ) : (
-            <>
-              <Icon name="Clock" className="mr-2" size={16} />
-              Проверить подписки
-            </>
+            <Button 
+              onClick={handleSetupCronjob} 
+              disabled={isLoadingCronjob}
+              variant="default"
+            >
+              {isLoadingCronjob ? (
+                <>
+                  <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
+                  Настройка...
+                </>
+              ) : (
+                <>
+                  <Icon name="Settings" className="mr-2" size={16} />
+                  Настроить автопроверку
+                </>
+              )}
+            </Button>
           )}
-        </Button>
+          <Button 
+            onClick={handleCheckSubscriptions} 
+            disabled={isCheckingSubscriptions}
+            variant="outline"
+          >
+            {isCheckingSubscriptions ? (
+              <>
+                <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
+                Проверка...
+              </>
+            ) : (
+              <>
+                <Icon name="Clock" className="mr-2" size={16} />
+                Проверить сейчас
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
