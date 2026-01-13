@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URL = 'https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8';
+const CHECK_SUBSCRIPTIONS_URL = 'https://functions.poehali.dev/2b45e5d6-8138-4bae-9236-237fe424ef95';
 
 interface User {
   id: number;
@@ -30,6 +31,7 @@ interface User {
 const UsersManagementPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSubscriptions, setIsCheckingSubscriptions] = useState(false);
   const [showExtendDialog, setShowExtendDialog] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
   const [extendMonths, setExtendMonths] = useState<number>(1);
@@ -136,13 +138,54 @@ const UsersManagementPanel = () => {
     );
   }
 
+  const handleCheckSubscriptions = async () => {
+    setIsCheckingSubscriptions(true);
+    try {
+      const response = await fetch(CHECK_SUBSCRIPTIONS_URL);
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({ 
+          title: 'Проверка завершена', 
+          description: `Истекло подписок: ${data.expired_count}, Отправлено уведомлений: ${data.notifications_sent}` 
+        });
+        loadUsers();
+      } else {
+        throw new Error(data.error || 'Failed to check subscriptions');
+      }
+    } catch (error: any) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsCheckingSubscriptions(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Управление пользователями</h2>
-        <p className="text-muted-foreground">
-          Пользователи, созданные после оплаты подписки
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Управление пользователями</h2>
+          <p className="text-muted-foreground">
+            Пользователи, созданные после оплаты подписки
+          </p>
+        </div>
+        <Button 
+          onClick={handleCheckSubscriptions} 
+          disabled={isCheckingSubscriptions}
+          variant="outline"
+        >
+          {isCheckingSubscriptions ? (
+            <>
+              <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
+              Проверка...
+            </>
+          ) : (
+            <>
+              <Icon name="Clock" className="mr-2" size={16} />
+              Проверить подписки
+            </>
+          )}
+        </Button>
       </div>
 
       <div className="space-y-4">
