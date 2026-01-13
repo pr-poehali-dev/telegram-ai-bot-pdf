@@ -64,6 +64,7 @@ export const getTariffId = (): string | null => {
 export const logout = () => {
   localStorage.removeItem('adminToken');
   localStorage.removeItem('adminUser');
+  sessionStorage.removeItem('superadmin_viewing_tenant');
 };
 
 export const getAuthHeaders = (): HeadersInit => {

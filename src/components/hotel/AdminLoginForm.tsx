@@ -45,6 +45,8 @@ const AdminLoginForm = ({ onLoginSuccess }: AdminLoginFormProps) => {
       if (response.ok && data.success) {
         localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminUser', JSON.stringify(data.user));
+        // Очищаем флаг просмотра других тенантов при новом входе
+        sessionStorage.removeItem('superadmin_viewing_tenant');
         setAttemptsLeft(null);
         setIsLocked(false);
         toast({
