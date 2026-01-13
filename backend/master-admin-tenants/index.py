@@ -53,6 +53,10 @@ def handler(event: dict, context) -> dict:
             return handle_toggle_tenant_public(method, event, cur, conn)
         elif action == 'tariffs':
             return handle_tariffs(method, event, cur, conn)
+        elif action == 'extend_subscription':
+            return handle_extend_subscription(method, event, cur, conn)
+        elif action == 'get_subscription':
+            return handle_get_subscription(method, event, cur, conn)
 
         if method == 'GET':
             cur.execute("""
@@ -585,7 +589,7 @@ def handle_tariffs(method, event, cur, conn):
     if method == 'GET':
         try:
             cur.execute("""
-                SELECT id, name, price, period, features, is_popular, is_active, sort_order
+                SELECT id, name, price, period, features, is_popular, is_active, sort_order, renewal_price, setup_fee
                 FROM t_p56134400_telegram_ai_bot_pdf.tariff_plans
                 ORDER BY sort_order
             """)
@@ -600,7 +604,9 @@ def handle_tariffs(method, event, cur, conn):
                     'features': row[4],
                     'is_popular': row[5],
                     'is_active': row[6],
-                    'sort_order': row[7]
+                    'sort_order': row[7],
+                    'renewal_price': float(row[8]) if row[8] else 0,
+                    'setup_fee': float(row[9]) if row[9] else 0
                 })
             cur.close()
             conn.close()
@@ -617,12 +623,14 @@ def handle_tariffs(method, event, cur, conn):
             cur.execute("""
                 UPDATE t_p56134400_telegram_ai_bot_pdf.tariff_plans
                 SET name = %s, price = %s, period = %s, features = %s, 
-                    is_popular = %s, is_active = %s, sort_order = %s, updated_at = NOW()
+                    is_popular = %s, is_active = %s, sort_order = %s, 
+                    renewal_price = %s, setup_fee = %s, updated_at = NOW()
                 WHERE id = %s
             """, (
                 body.get('name'), body.get('price'), body.get('period'), 
                 json.dumps(body.get('features')), body.get('is_popular'), 
-                body.get('is_active'), body.get('sort_order', 0), tariff_id
+                body.get('is_active'), body.get('sort_order', 0),
+                body.get('renewal_price'), body.get('setup_fee'), tariff_id
             ))
             conn.commit()
             cur.close()
@@ -632,3 +640,127 @@ def handle_tariffs(method, event, cur, conn):
             cur.close()
             conn.close()
             return {'statusCode': 500, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': str(e)}), 'isBase64Encoded': False}
+
+def handle_extend_subscription(method, event, cur, conn):
+    """Продление подписки суперадмином (бесплатно, на N месяцев)"""
+    if method != 'POST':
+        return {'statusCode': 405, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'Method not allowed'}), 'isBase64Encoded': False}
+    
+    try:
+        from datetime import datetime, timedelta
+        body = json.loads(event.get('body', '{}'))
+        tenant_id = body.get('tenant_id')
+        months = body.get('months', 1)
+        
+        if not tenant_id:
+            return {'statusCode': 400, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'tenant_id required'}), 'isBase64Encoded': False}
+        
+        # Получаем текущую дату окончания подписки
+        cur.execute("""
+            SELECT subscription_end_date, subscription_status
+            FROM t_p56134400_telegram_ai_bot_pdf.tenants
+            WHERE id = %s
+        """, (tenant_id,))
+        result = cur.fetchone()
+        
+        if not result:
+            cur.close()
+            conn.close()
+            return {'statusCode': 404, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'Tenant not found'}), 'isBase64Encoded': False}
+        
+        current_end_date = result[0]
+        current_status = result[1]
+        
+        # Вычисляем новую дату окончания
+        if current_end_date and current_status == 'active':
+            # Если подписка активна, продлеваем от текущей даты окончания
+            new_end_date = current_end_date + timedelta(days=30 * months)
+        else:
+            # Если подписка истекла, продлеваем от сегодня
+            new_end_date = datetime.utcnow() + timedelta(days=30 * months)
+        
+        # Обновляем дату окончания и статус
+        cur.execute("""
+            UPDATE t_p56134400_telegram_ai_bot_pdf.tenants
+            SET subscription_end_date = %s, subscription_status = 'active', updated_at = NOW()
+            WHERE id = %s
+        """, (new_end_date, tenant_id))
+        
+        # Обновляем пользователя
+        cur.execute("""
+            UPDATE t_p56134400_telegram_ai_bot_pdf.admin_users
+            SET subscription_end_date = %s, subscription_status = 'active'
+            WHERE tenant_id = %s
+        """, (new_end_date, tenant_id))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return {'statusCode': 200, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'success': True, 'new_end_date': new_end_date.isoformat()}), 'isBase64Encoded': False}
+    except Exception as e:
+        cur.close()
+        conn.close()
+        return {'statusCode': 500, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': str(e)}), 'isBase64Encoded': False}
+
+def handle_get_subscription(method, event, cur, conn):
+    """Получение информации о подписке тенанта"""
+    if method != 'GET':
+        return {'statusCode': 405, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'Method not allowed'}), 'isBase64Encoded': False}
+    
+    try:
+        from datetime import datetime
+        query_params = event.get('queryStringParameters') or {}
+        tenant_id = query_params.get('tenant_id')
+        
+        if not tenant_id:
+            return {'statusCode': 400, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'tenant_id required'}), 'isBase64Encoded': False}
+        
+        cur.execute("""
+            SELECT t.subscription_status, t.subscription_end_date, t.tariff_id,
+                   tp.name, tp.renewal_price
+            FROM t_p56134400_telegram_ai_bot_pdf.tenants t
+            LEFT JOIN t_p56134400_telegram_ai_bot_pdf.tariff_plans tp ON tp.id = t.tariff_id
+            WHERE t.id = %s
+        """, (tenant_id,))
+        
+        result = cur.fetchone()
+        
+        if not result:
+            cur.close()
+            conn.close()
+            return {'statusCode': 404, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'Tenant not found'}), 'isBase64Encoded': False}
+        
+        status = result[0]
+        end_date = result[1]
+        tariff_id = result[2]
+        tariff_name = result[3] or 'Неизвестный тариф'
+        renewal_price = float(result[4]) if result[4] else 0
+        
+        days_left = 0
+        if end_date:
+            delta = end_date - datetime.utcnow()
+            days_left = max(0, delta.days)
+        
+        cur.close()
+        conn.close()
+        
+        return {
+            'statusCode': 200, 
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 
+            'body': json.dumps({
+                'subscription': {
+                    'status': status,
+                    'end_date': end_date.isoformat() if end_date else None,
+                    'tariff_id': tariff_id,
+                    'tariff_name': tariff_name,
+                    'renewal_price': renewal_price,
+                    'days_left': days_left
+                }
+            }), 
+            'isBase64Encoded': False
+        }
+    except Exception as e:
+        cur.close()
+        conn.close()
+        return {'statusCode': 500, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': str(e)}), 'isBase64Encoded': False}

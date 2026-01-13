@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
@@ -27,6 +30,9 @@ interface User {
 const UsersManagementPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showExtendDialog, setShowExtendDialog] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
+  const [extendMonths, setExtendMonths] = useState<number>(1);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -95,6 +101,30 @@ const UsersManagementPanel = () => {
         return <Badge variant="secondary">Отменена</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const handleExtendSubscription = async () => {
+    if (!selectedTenant) return;
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}?action=extend_subscription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant_id: selectedTenant, months: extendMonths })
+      });
+
+      if (response.ok) {
+        toast({ title: 'Успешно', description: `Подписка продлена на ${extendMonths} мес.` });
+        setShowExtendDialog(false);
+        setSelectedTenant(null);
+        setExtendMonths(1);
+        loadUsers();
+      } else {
+        throw new Error('Failed to extend subscription');
+      }
+    } catch (error: any) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -169,27 +199,76 @@ const UsersManagementPanel = () => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={user.is_active}
-                      onCheckedChange={(checked) => toggleUserStatus(user.id, checked)}
-                    />
-                    <span className="text-sm">Пользователь активен</span>
+                <div className="space-y-4 pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={user.is_active}
+                        onCheckedChange={(checked) => toggleUserStatus(user.id, checked)}
+                      />
+                      <span className="text-sm">Пользователь активен</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={user.is_public}
+                        onCheckedChange={(checked) => toggleTenantPublic(user.tenant_id, checked)}
+                      />
+                      <span className="text-sm">Публичный доступ</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={user.is_public}
-                      onCheckedChange={(checked) => toggleTenantPublic(user.tenant_id, checked)}
-                    />
-                    <span className="text-sm">Публичный доступ</span>
-                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setSelectedTenant(user.tenant_id);
+                      setShowExtendDialog(true);
+                    }}
+                  >
+                    <Icon name="CalendarPlus" className="mr-2" size={16} />
+                    Продлить подписку
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))
         )}
       </div>
+
+      <Dialog open={showExtendDialog} onOpenChange={setShowExtendDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Продлить подписку</DialogTitle>
+            <DialogDescription>
+              Бесплатное продление подписки администратором
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="months">Количество месяцев</Label>
+              <Input
+                id="months"
+                type="number"
+                min="1"
+                max="24"
+                value={extendMonths}
+                onChange={(e) => setExtendMonths(parseInt(e.target.value) || 1)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Подписка будет продлена на {extendMonths} мес. ({extendMonths * 30} дней)
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleExtendSubscription} className="flex-1">
+                <Icon name="Check" className="mr-2" size={16} />
+                Продлить
+              </Button>
+              <Button variant="outline" onClick={() => setShowExtendDialog(false)}>
+                Отмена
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

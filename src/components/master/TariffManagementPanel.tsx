@@ -14,6 +14,8 @@ interface Tariff {
   id: string;
   name: string;
   price: number;
+  renewal_price: number;
+  setup_fee: number;
   period: string;
   features: string[];
   is_popular: boolean;
@@ -111,13 +113,16 @@ const TariffManagementPanel = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="price">Цена (₽)</Label>
+                <Label htmlFor="price">Начальная цена (₽)</Label>
                 <Input
                   id="price"
                   type="number"
                   value={editingTariff.price}
                   onChange={(e) => setEditingTariff({ ...editingTariff, price: parseFloat(e.target.value) })}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Включает setup fee + первый период
+                </p>
               </div>
               <div>
                 <Label htmlFor="period">Период</Label>
@@ -126,6 +131,33 @@ const TariffManagementPanel = () => {
                   value={editingTariff.period}
                   onChange={(e) => setEditingTariff({ ...editingTariff, period: e.target.value })}
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="renewal_price">Цена продления (₽/мес)</Label>
+                <Input
+                  id="renewal_price"
+                  type="number"
+                  value={editingTariff.renewal_price}
+                  onChange={(e) => setEditingTariff({ ...editingTariff, renewal_price: parseFloat(e.target.value) })}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ежемесячный платеж после первого
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="setup_fee">Setup Fee (₽)</Label>
+                <Input
+                  id="setup_fee"
+                  type="number"
+                  value={editingTariff.setup_fee}
+                  onChange={(e) => setEditingTariff({ ...editingTariff, setup_fee: parseFloat(e.target.value) })}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Единоразовая плата за создание
+                </p>
               </div>
             </div>
 
@@ -217,8 +249,15 @@ const TariffManagementPanel = () => {
                 )}
               </div>
               <CardDescription>
-                <span className="text-2xl font-bold">{tariff.price.toLocaleString('ru-RU')} ₽</span>
-                <span className="text-sm"> / {tariff.period}</span>
+                <div className="space-y-1">
+                  <div>
+                    <span className="text-2xl font-bold">{tariff.price.toLocaleString('ru-RU')} ₽</span>
+                    <span className="text-sm"> (первый платеж)</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Продление: {tariff.renewal_price.toLocaleString('ru-RU')} ₽/{tariff.period}
+                  </div>
+                </div>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

@@ -13,7 +13,9 @@ import WidgetSettingsCard from './WidgetSettingsCard';
 import AiSettingsCard from './AiSettingsCard';
 import QualityGateStatsCard from './QualityGateStatsCard';
 import RagDebugInfoCard from './RagDebugInfoCard';
+import SubscriptionWidget from './SubscriptionWidget';
 import { Document, BACKEND_URLS } from './types';
+import { getTenantId } from '@/lib/auth';
 import { useState, useMemo } from 'react';
 
 interface AdminViewProps {
@@ -49,8 +51,14 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
     return 'h-[720px]';
   }, [filteredDocuments.length]);
 
+  const tenantId = getTenantId();
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {tenantId && (
+        <SubscriptionWidget tenantId={tenantId} />
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="hover:shadow-lg transition-shadow">
           <CardContent className="pt-6">
