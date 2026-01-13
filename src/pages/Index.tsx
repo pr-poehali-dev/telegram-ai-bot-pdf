@@ -70,6 +70,14 @@ const Index = () => {
       return;
     }
     
+    // Игнорируем служебные роуты (admin, super-admin и т.д.)
+    const reservedRoutes = ['admin', 'super-admin', 'master-admin', 'payment', 'content-editor'];
+    if (reservedRoutes.includes(tenantSlug)) {
+      console.log(`[Index] Ignoring reserved route: ${tenantSlug}`);
+      setCurrentTenantId(getTenantId());
+      return;
+    }
+    
     try {
       const response = await fetch('https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8');
       const data = await response.json();
