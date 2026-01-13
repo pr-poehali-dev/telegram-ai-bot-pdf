@@ -16,10 +16,8 @@ interface ApiKey {
 }
 
 const API_KEY_CONFIGS = [
-  { provider: 'yandexgpt', key_name: 'api_key', label: 'YandexGPT API Key', placeholder: 'y*****' },
+  { provider: 'yandexgpt', key_name: 'api_key', label: 'YandexGPT API Key', placeholder: 'AQVN***' },
   { provider: 'yandexgpt', key_name: 'folder_id', label: 'YandexGPT Folder ID', placeholder: 'b1g***' },
-  { provider: 'openai', key_name: 'api_key', label: 'OpenAI API Key', placeholder: 'sk-***' },
-  { provider: 'deepseek', key_name: 'api_key', label: 'DeepSeek API Key', placeholder: 'sk-***' },
   { provider: 'telegram', key_name: 'bot_token', label: 'Telegram Bot Token', placeholder: '1234567890:***' },
 ];
 

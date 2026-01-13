@@ -8,7 +8,6 @@ import PageSettingsCard from './PageSettingsCard';
 import WidgetSettingsCard from './WidgetSettingsCard';
 import AiSettingsCard from './AiSettingsCard';
 import SubscriptionWidget from './SubscriptionWidget';
-import YooKassaSettingsCard from './YooKassaSettingsCard';
 import ApiKeysCard from './ApiKeysCard';
 import { DocumentStatsCards } from './DocumentStatsCards';
 import { DocumentsPanel } from './DocumentsPanel';
