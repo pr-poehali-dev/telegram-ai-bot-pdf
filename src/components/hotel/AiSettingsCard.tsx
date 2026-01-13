@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { BACKEND_URLS, AI_MODELS, DEFAULT_AI_SETTINGS, AiModelSettings } from './types';
@@ -153,6 +154,24 @@ const AiSettingsCard = () => {
             )}
           </div>
         )}
+
+        <div className="space-y-2">
+          <Label htmlFor="system_prompt">Системный промпт</Label>
+          <Textarea
+            id="system_prompt"
+            value={settings.system_prompt || ''}
+            onChange={(e) => {
+              setSettings({ ...settings, system_prompt: e.target.value });
+              setSelectedPreset('');
+            }}
+            placeholder="Введите системный промпт для AI ассистента..."
+            rows={8}
+            className="font-mono text-sm"
+          />
+          <p className="text-xs text-muted-foreground">
+            Системный промпт определяет поведение и стиль ответов AI ассистента
+          </p>
+        </div>
 
         <AiSettingsSliders
           settings={settings}

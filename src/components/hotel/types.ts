@@ -52,6 +52,7 @@ export interface AiModelSettings {
   max_tokens: number;
   system_priority?: string;
   creative_mode?: string;
+  system_prompt?: string;
 }
 
 export const AI_MODELS = [
@@ -68,7 +69,8 @@ export const DEFAULT_AI_SETTINGS: Record<string, AiModelSettings> = {
     presence_penalty: 0,
     max_tokens: 600,
     system_priority: 'strict',
-    creative_mode: 'off'
+    creative_mode: 'off',
+    system_prompt: ''
   },
   openai: {
     model: 'openai',
@@ -76,7 +78,8 @@ export const DEFAULT_AI_SETTINGS: Record<string, AiModelSettings> = {
     top_p: 1.0,
     frequency_penalty: 0,
     presence_penalty: 0,
-    max_tokens: 600
+    max_tokens: 600,
+    system_prompt: ''
   }
 };
 
