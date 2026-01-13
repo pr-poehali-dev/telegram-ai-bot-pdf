@@ -24,7 +24,7 @@ const PaymentSuccess = () => {
           </div>
           <CardTitle className="text-3xl">Оплата прошла успешно</CardTitle>
           <CardDescription className="text-lg">
-            Спасибо за подписку на AI-консьерж
+            Спасибо за подписку на AI-консультант
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 text-center">
@@ -50,7 +50,7 @@ const PaymentSuccess = () => {
                   <li>Письмо должно прийти в течение 1-2 минут</li>
                   <li>Проверьте папку "Спам", если письма нет во Входящих</li>
                   <li>Используйте полученные данные для входа в систему</li>
-                  <li>Загрузите документы вашего отеля для обучения AI</li>
+                  <li>Загрузите документы вашей компании для обучения AI</li>
                 </ul>
               </div>
             </div>

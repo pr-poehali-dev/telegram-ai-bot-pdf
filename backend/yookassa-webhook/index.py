@@ -181,7 +181,7 @@ def send_welcome_email(to_email: str, username: str, password: str, tenant_id: i
         msg = MIMEMultipart()
         msg['From'] = smtp_user
         msg['To'] = to_email
-        msg['Subject'] = 'Доступ к AI-консьержу - оплата подтверждена'
+        msg['Subject'] = 'Доступ к AI-консультанту - оплата подтверждена'
         msg.attach(MIMEText(email_body, 'plain', 'utf-8'))
         
         if smtp_port == 465:

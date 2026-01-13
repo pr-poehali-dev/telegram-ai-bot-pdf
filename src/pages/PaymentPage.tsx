@@ -141,7 +141,7 @@ const PaymentPage = () => {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Выберите тариф</h1>
           <p className="text-lg text-muted-foreground">
-            Начните использовать AI-консьержа для вашего отеля уже сегодня
+            Начните использовать AI-консультанта для вашего бизнеса уже сегодня
           </p>
         </div>
 
@@ -199,13 +199,13 @@ const PaymentPage = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="tenant_name">
-                  Название вашего отеля <span className="text-red-500">*</span>
+                  Название вашей компании <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="tenant_name"
                   value={formData.tenant_name}
                   onChange={(e) => setFormData({ ...formData, tenant_name: e.target.value })}
-                  placeholder="Отель Династия"
+                  placeholder="Моя Компания"
                   required
                 />
               </div>
@@ -237,7 +237,7 @@ const PaymentPage = () => {
                   type="email"
                   value={formData.owner_email}
                   onChange={(e) => setFormData({ ...formData, owner_email: e.target.value })}
-                  placeholder="admin@hotel.ru"
+                  placeholder="admin@company.ru"
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">

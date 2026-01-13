@@ -41,6 +41,7 @@ interface Payment {
 
 const UsersManagementPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingSubscriptions, setIsCheckingSubscriptions] = useState(false);
   const [showExtendDialog, setShowExtendDialog] = useState(false);
@@ -50,11 +51,35 @@ const UsersManagementPanel = () => {
   const [extendMonths, setExtendMonths] = useState<number>(1);
   const [paymentHistory, setPaymentHistory] = useState<Payment[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const { toast } = useToast();
 
   useEffect(() => {
     loadUsers();
   }, []);
+
+  useEffect(() => {
+    let result = users;
+
+    // Фильтр по статусу
+    if (statusFilter !== 'all') {
+      result = result.filter(user => user.subscription_status === statusFilter);
+    }
+
+    // Поиск по имени, email, slug
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(user =>
+        user.tenant_name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.tenant_slug.toLowerCase().includes(query) ||
+        user.username.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredUsers(result);
+  }, [users, searchQuery, statusFilter]);
 
   const loadUsers = async () => {
     setIsLoading(true);
@@ -196,7 +221,7 @@ const UsersManagementPanel = () => {
         <div>
           <h2 className="text-2xl font-bold">Управление пользователями</h2>
           <p className="text-muted-foreground">
-            Пользователи, созданные после оплаты подписки
+            Пользователи, созданные после оплаты подписки ({filteredUsers.length} из {users.length})
           </p>
         </div>
         <Button 
@@ -218,6 +243,29 @@ const UsersManagementPanel = () => {
         </Button>
       </div>
 
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="md:col-span-2">
+          <Input
+            placeholder="Поиск по имени, email, логину..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            <option value="all">Все статусы</option>
+            <option value="active">Активные</option>
+            <option value="expired">Истекшие</option>
+            <option value="cancelled">Отмененные</option>
+          </select>
+        </div>
+      </div>
+
       <div className="space-y-4">
         {users.length === 0 ? (
           <Card>
@@ -226,8 +274,18 @@ const UsersManagementPanel = () => {
               <p className="text-muted-foreground">Пока нет пользователей</p>
             </CardContent>
           </Card>
+        ) : filteredUsers.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Icon name="Search" size={48} className="mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Ничего не найдено</p>
+              <Button variant="link" onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}>
+                Сбросить фильтры
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
-          users.map((user) => (
+          filteredUsers.map((user) => (
             <Card key={user.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
