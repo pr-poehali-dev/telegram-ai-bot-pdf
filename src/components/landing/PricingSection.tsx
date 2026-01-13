@@ -125,7 +125,11 @@ export const PricingSection = ({ onPlanSelect }: PricingSectionProps) => {
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />
-                  WhatsApp, VK, MAX (по вашим ключам)
+                  WhatsApp, VK, MAX (ваши ключи + инструкция)
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <Icon name="Check" size={20} className="text-green-600" />
+                  Ваш API ключ YandexGPT (даём инструкцию)
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <Icon name="Check" size={20} className="text-green-600" />

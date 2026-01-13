@@ -169,7 +169,7 @@ export const OrderFormSection = ({ selectedTariff }: OrderFormSectionProps) => {
                 </div>
               )}
               {formData.tariff === 'enterprise' ? (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 rounded-xl p-6 mb-6 shadow-lg">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 rounded-xl p-6 mb-6 shadow-lg transition-all duration-500 animate-fade-in">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Icon name="Crown" size={24} className="text-white" />
@@ -204,14 +204,14 @@ export const OrderFormSection = ({ selectedTariff }: OrderFormSectionProps) => {
                       <div className="mt-4 p-3 bg-white/60 rounded-lg">
                         <p className="text-xs text-purple-900 font-semibold flex items-center gap-2">
                           <Icon name="Sparkles" size={16} />
-                          Вам не нужно ничего делать — мы всё настроим сами!
+                          Используете свои ключи мессенджеров и AI. Дадим инструкцию по получению.
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-6 mb-6 shadow-lg">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-6 mb-6 shadow-lg transition-all duration-500 animate-fade-in">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Icon name="Zap" size={24} className="text-white" />
