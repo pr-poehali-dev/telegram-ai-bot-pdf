@@ -14,6 +14,7 @@ import TenantsListTable from './TenantsListTable';
 import AdminUsersPanel from './AdminUsersPanel';
 import MessengersStatusCard from './MessengersStatusCard';
 import DefaultSettingsPanel from './DefaultSettingsPanel';
+import CreateTenantWithUserPanel from './CreateTenantWithUserPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Tenant {
@@ -329,8 +330,9 @@ const MasterAdminView = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-3xl grid-cols-4">
           <TabsTrigger value="dashboard">Дашборд</TabsTrigger>
+          <TabsTrigger value="create">Создать пару</TabsTrigger>
           <TabsTrigger value="settings">Дефолтные настройки</TabsTrigger>
           <TabsTrigger value="users">Пользователи</TabsTrigger>
         </TabsList>
@@ -356,6 +358,10 @@ const MasterAdminView = () => {
             />
           </div>
           <TenantsListTable tenants={tenants} onUpdate={loadTenants} />
+        </TabsContent>
+
+        <TabsContent value="create">
+          <CreateTenantWithUserPanel />
         </TabsContent>
 
         <TabsContent value="settings">

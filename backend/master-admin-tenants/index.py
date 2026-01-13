@@ -4,6 +4,9 @@ import psycopg2
 import hashlib
 import secrets
 import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
 def handler(event: dict, context) -> dict:
@@ -274,9 +277,18 @@ def handle_create_user(method, event, cur, conn):
     conn.commit()
     cur.close()
     conn.close()
-    login_url = f"https://your-domain.com/tenant-login"
+    
+    # Отправка email
+    login_url = f"https://your-domain.com/content-editor?tenant_id={tenant_id}"
     email_body = email_template.format(username=username, password=password, login_url=login_url)
-    return {'statusCode': 200, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'success': True, 'user_id': user_id, 'username': username, 'email_body': email_body}), 'isBase64Encoded': False}
+    
+    email_sent = send_email(
+        to_email=email,
+        subject='Доступ к системе управления контентом',
+        body=email_body
+    )
+    
+    return {'statusCode': 200, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'success': True, 'user_id': user_id, 'username': username, 'email_sent': email_sent, 'password': password}), 'isBase64Encoded': False}
 
 def handle_public_content(method, event, cur, conn):
     query_params = event.get('queryStringParameters') or {}
@@ -330,3 +342,37 @@ def handle_public_content(method, event, cur, conn):
         cur.close()
         conn.close()
         return {'statusCode': 200, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'success': True}), 'isBase64Encoded': False}
+
+def send_email(to_email: str, subject: str, body: str) -> bool:
+    """Отправка email через SMTP"""
+    try:
+        smtp_host = os.environ.get('SMTP_HOST')
+        smtp_port = int(os.environ.get('SMTP_PORT', 465))
+        smtp_user = os.environ.get('SMTP_USER')
+        smtp_password = os.environ.get('SMTP_PASSWORD')
+        
+        if not all([smtp_host, smtp_user, smtp_password]):
+            print('SMTP настройки не полностью заполнены')
+            return False
+        
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port)
+            server.starttls()
+        
+        server.login(smtp_user, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        print(f'Email успешно отправлен на {to_email}')
+        return True
+    except Exception as e:
+        print(f'Ошибка отправки email: {str(e)}')
+        return False
