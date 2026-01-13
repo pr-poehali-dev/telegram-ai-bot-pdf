@@ -133,6 +133,10 @@ def handler(event: dict, context) -> dict:
                     'professional': 'Бизнес',
                     'enterprise': 'Премиум'
                 }
+                
+                # Формируем URL для входа
+                login_url = f"https://ai-ru.ru/content-editor?tenant_id={tenant_id}"
+                
                 email_sent = send_order_notification(
                     customer_email=owner_email,
                     customer_name=metadata.get('tenant_name', ''),
@@ -140,7 +144,10 @@ def handler(event: dict, context) -> dict:
                     tariff_name=tariff_names.get(tariff_id, tariff_id),
                     amount=float(amount),
                     payment_id=payment_id,
-                    tenant_slug=tenant_slug
+                    tenant_slug=tenant_slug,
+                    username=username,
+                    password=password,
+                    login_url=login_url
                 )
                 
                 print(f'Tenant {tenant_id} and user {user_id} created for payment {payment_id}. Email sent: {email_sent}')
@@ -214,7 +221,8 @@ def send_welcome_email(to_email: str, username: str, password: str, tenant_id: i
         return False
 
 def send_order_notification(customer_email: str, customer_name: str, customer_phone: str, 
-                           tariff_name: str, amount: float, payment_id: str, tenant_slug: str) -> bool:
+                           tariff_name: str, amount: float, payment_id: str, tenant_slug: str,
+                           username: str = '', password: str = '', login_url: str = '') -> bool:
     """Отправка email уведомления через отдельный сервис"""
     try:
         response = requests.post(
@@ -226,7 +234,10 @@ def send_order_notification(customer_email: str, customer_name: str, customer_ph
                 'tariff_name': tariff_name,
                 'amount': amount,
                 'payment_id': payment_id,
-                'tenant_slug': tenant_slug
+                'tenant_slug': tenant_slug,
+                'username': username,
+                'password': password,
+                'login_url': login_url
             },
             timeout=10
         )

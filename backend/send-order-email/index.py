@@ -35,6 +35,9 @@ def handler(event: dict, context) -> dict:
         amount = body.get('amount', 0)
         payment_id = body.get('payment_id', '')
         tenant_slug = body.get('tenant_slug', '')
+        username = body.get('username', '')
+        password = body.get('password', '')
+        login_url = body.get('login_url', '')
         
         if not customer_email:
             return {
@@ -59,7 +62,7 @@ def handler(event: dict, context) -> dict:
             }
         
         # Email клиенту
-        customer_msg = create_customer_email(customer_name, customer_email, tariff_name, amount, tenant_slug)
+        customer_msg = create_customer_email(customer_name, customer_email, tariff_name, amount, tenant_slug, username, password, login_url)
         send_email(smtp_host, smtp_port, smtp_user, smtp_password, customer_email, 'Подтверждение заказа AI-консультанта', customer_msg)
         
         # Email администратору
@@ -104,7 +107,7 @@ def send_email(host: str, port: int, user: str, password: str, to_email: str, su
             server.login(user, password)
             server.send_message(msg)
 
-def create_customer_email(name: str, email: str, tariff: str, amount: float, tenant_slug: str) -> str:
+def create_customer_email(name: str, email: str, tariff: str, amount: float, tenant_slug: str, username: str = '', password: str = '', login_url: str = '') -> str:
     """HTML шаблон письма клиенту"""
     return f"""
     <!DOCTYPE html>
@@ -139,12 +142,19 @@ def create_customer_email(name: str, email: str, tariff: str, amount: float, ten
                     <p><strong>Ваш проект:</strong> {tenant_slug}</p>
                 </div>
                 
+                {f'''<div class="info" style="background: #e0f2fe; border-left: 4px solid #0284c7;">
+                    <h3>🔑 Доступ к админ-панели:</h3>
+                    <p><strong>Логин:</strong> <code style="background: white; padding: 4px 8px; border-radius: 3px;">{username}</code></p>
+                    <p><strong>Пароль:</strong> <code style="background: white; padding: 4px 8px; border-radius: 3px;">{password}</code></p>
+                    <p><a href="{login_url}" class="button" style="display: inline-block; background: #0284c7; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 10px;">Войти в админ-панель</a></p>
+                </div>''' if username and password else ''}
+                
                 <p><strong>Что дальше?</strong></p>
                 <ul>
-                    <li>В течение 24 часов мы настроим ваш AI-консультант</li>
-                    <li>Вы получите доступ к админ-панели для управления</li>
-                    <li>Сможете загружать PDF с информацией об отеле</li>
-                    <li>Настроить интеграции с мессенджерами</li>
+                    <li>Войдите в админ-панель по данным выше</li>
+                    <li>Загрузите PDF с информацией об отеле</li>
+                    <li>Настройте интеграции с мессенджерами</li>
+                    <li>Протестируйте AI-консультант</li>
                 </ul>
                 
                 <p>Если у вас есть вопросы, ответим в течение нескольких часов:</p>
