@@ -35,6 +35,13 @@ const Index = () => {
     if (isAuthenticated()) {
       setIsAdminAuthenticated(true);
       console.log('[Index] User is authenticated. isSuperAdmin:', isSuperAdmin());
+      
+      // Если супер-админ пытается зайти в обычную админку - редирект на мастер-панель
+      if (isSuperAdmin() && location.pathname.endsWith('/admin')) {
+        console.log('[Index] Super admin detected, redirecting to /super-admin');
+        window.location.href = '/super-admin';
+        return;
+      }
     }
     if (location.pathname.endsWith('/admin')) {
       setView('admin');
