@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isSuperAdmin, authenticatedFetch } from '@/lib/auth';
+import { isSuperAdmin, authenticatedFetch, enterTenantAsSuper } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -99,6 +99,15 @@ const SuperAdmin = () => {
 
   const handleManageTenant = (tenant: Tenant) => {
     setEditingTenant(tenant);
+  };
+
+  const handleEnterTenantAdmin = (tenant: Tenant) => {
+    enterTenantAsSuper(tenant.id, tenant.tariff_id);
+    navigate('/admin');
+    toast({
+      title: 'Вход в админку бота',
+      description: `Вы вошли в админ-панель ${tenant.name} с полными правами`,
+    });
   };
 
   const handleEditTariff = (tariff: Tariff) => {
@@ -303,14 +312,24 @@ const SuperAdmin = () => {
                           )}
                         </div>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleManageTenant(tenant)}
-                      >
-                        <Icon name="Settings" size={16} className="mr-2" />
-                        Управление
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => handleEnterTenantAdmin(tenant)}
+                        >
+                          <Icon name="LogIn" size={16} className="mr-2" />
+                          Войти в админку
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleManageTenant(tenant)}
+                        >
+                          <Icon name="Settings" size={16} className="mr-2" />
+                          Настройки
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

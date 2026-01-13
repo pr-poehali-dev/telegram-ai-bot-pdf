@@ -12,7 +12,9 @@ import YooKassaSettingsCard from './YooKassaSettingsCard';
 import { DocumentStatsCards } from './DocumentStatsCards';
 import { DocumentsPanel } from './DocumentsPanel';
 import { Document, BACKEND_URLS } from './types';
-import { getTenantId, getTariffId, isSuperAdmin, getAdminUser } from '@/lib/auth';
+import { getTenantId, getTariffId, isSuperAdmin, getAdminUser, exitTenantView } from '@/lib/auth';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { hasFeatureAccess } from '@/lib/tariff-limits';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
@@ -25,10 +27,17 @@ interface AdminViewProps {
 }
 
 const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: AdminViewProps) => {
+  const navigate = useNavigate();
   const tenantId = getTenantId();
   const tariffId = getTariffId();
   const superAdmin = isSuperAdmin();
   const currentUser = getAdminUser();
+  const isViewingOtherTenant = sessionStorage.getItem('superadmin_viewing_tenant') === 'true';
+
+  const handleExitTenantView = () => {
+    exitTenantView();
+    navigate('/super-admin');
+  };
 
   const UpgradeCard = ({ feature }: { feature: string }) => (
     <Card className="border-amber-500 bg-amber-50">
@@ -56,23 +65,36 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
       {currentUser && (
         <Card className={superAdmin ? "border-purple-500 bg-purple-50" : "border-blue-500 bg-blue-50"}>
           <CardContent className="py-4">
-            <div className="flex items-center gap-2">
-              <Icon name={superAdmin ? "ShieldCheck" : "User"} size={20} className={superAdmin ? "text-purple-600" : "text-blue-600"} />
-              <span className={`font-semibold ${superAdmin ? "text-purple-900" : "text-blue-900"}`}>
-                {superAdmin ? "Режим суперадмина" : "Админ-панель"}
-              </span>
-              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
-                • Логин: {currentUser.username}
-              </span>
-              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
-                • Роль: {currentUser.role === 'super_admin' ? 'Суперадмин' : 'Админ бота'}
-              </span>
-              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
-                • Tenant ID: {tenantId}
-              </span>
-              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
-                • Tariff: {tariffId || 'не установлен'}
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Icon name={superAdmin ? "ShieldCheck" : "User"} size={20} className={superAdmin ? "text-purple-600" : "text-blue-600"} />
+                <span className={`font-semibold ${superAdmin ? "text-purple-900" : "text-blue-900"}`}>
+                  {superAdmin ? (isViewingOtherTenant ? "Режим просмотра (суперадмин)" : "Режим суперадмина") : "Админ-панель"}
+                </span>
+                <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                  • Логин: {currentUser.username}
+                </span>
+                <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                  • Роль: {currentUser.role === 'super_admin' ? 'Суперадмин' : 'Админ бота'}
+                </span>
+                <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                  • Tenant ID: {tenantId}
+                </span>
+                <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                  • Tariff: {tariffId || 'не установлен'}
+                </span>
+              </div>
+              {isViewingOtherTenant && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleExitTenantView}
+                  className="border-purple-600 text-purple-700 hover:bg-purple-100"
+                >
+                  <Icon name="ArrowLeft" size={16} className="mr-2" />
+                  Вернуться к суперадмину
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

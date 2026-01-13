@@ -50,11 +50,19 @@ export const isSuperAdmin = (): boolean => {
 };
 
 export const getTenantId = (): number | null => {
+  const viewingTenantId = sessionStorage.getItem('superadmin_viewing_tenant_id');
+  if (viewingTenantId) {
+    return parseInt(viewingTenantId, 10);
+  }
   const user = getAdminUser();
   return user?.tenant_id ?? null;
 };
 
 export const getTariffId = (): string | null => {
+  const viewingTariffId = sessionStorage.getItem('superadmin_viewing_tariff_id');
+  if (viewingTariffId) {
+    return viewingTariffId;
+  }
   const user = getAdminUser();
   const tariffId = user?.tariff_id ?? null;
   console.log('[auth] getTariffId:', { user, tariffId });
@@ -65,6 +73,20 @@ export const logout = () => {
   localStorage.removeItem('adminToken');
   localStorage.removeItem('adminUser');
   sessionStorage.removeItem('superadmin_viewing_tenant');
+  sessionStorage.removeItem('superadmin_viewing_tenant_id');
+  sessionStorage.removeItem('superadmin_viewing_tariff_id');
+};
+
+export const enterTenantAsSuper = (tenantId: number, tariffId: string) => {
+  sessionStorage.setItem('superadmin_viewing_tenant', 'true');
+  sessionStorage.setItem('superadmin_viewing_tenant_id', tenantId.toString());
+  sessionStorage.setItem('superadmin_viewing_tariff_id', tariffId);
+};
+
+export const exitTenantView = () => {
+  sessionStorage.removeItem('superadmin_viewing_tenant');
+  sessionStorage.removeItem('superadmin_viewing_tenant_id');
+  sessionStorage.removeItem('superadmin_viewing_tariff_id');
 };
 
 export const getAuthHeaders = (): HeadersInit => {
