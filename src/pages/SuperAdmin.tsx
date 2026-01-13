@@ -107,7 +107,7 @@ const SuperAdmin = () => {
             </div>
             <Button variant="outline" onClick={() => navigate('/admin')}>
               <Icon name="ArrowLeft" size={16} className="mr-2" />
-              К своей паре
+              К своему боту
             </Button>
           </div>
         </div>
@@ -177,7 +177,7 @@ const SuperAdmin = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Последние клиенты</CardTitle>
-                <CardDescription>Недавно созданные пары</CardDescription>
+                <CardDescription>Недавно созданные боты</CardDescription>
               </CardHeader>
               <CardContent>
                 {tenants.slice(0, 5).map(tenant => (
@@ -202,7 +202,7 @@ const SuperAdmin = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Управление клиентами</CardTitle>
-                <CardDescription>Все пары в системе</CardDescription>
+                <CardDescription>Все боты в системе</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

@@ -65,7 +65,7 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
                 • Логин: {currentUser.username}
               </span>
               <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
-                • Роль: {currentUser.role === 'super_admin' ? 'Суперадмин' : 'Админ пары'}
+                • Роль: {currentUser.role === 'super_admin' ? 'Суперадмин' : 'Админ бота'}
               </span>
               <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
                 • Tenant ID: {tenantId}
