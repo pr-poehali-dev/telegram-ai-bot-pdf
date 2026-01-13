@@ -230,7 +230,7 @@ const PaymentPage = () => {
                     id="tenant_slug"
                     value={formData.tenant_slug}
                     onChange={(e) => setFormData({ ...formData, tenant_slug: e.target.value })}
-                    placeholder="dinasty-hotel"
+                    placeholder="my-business"
                   />
                   <Button type="button" variant="outline" onClick={generateSlug}>
                     <Icon name="Wand2" size={16} />

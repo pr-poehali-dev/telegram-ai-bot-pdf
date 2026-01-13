@@ -66,7 +66,7 @@ export const CreateTenantDialog = ({
               <Input
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                placeholder="hotel-paradise"
+                placeholder="my-business"
               />
             </div>
             <div>
@@ -74,7 +74,7 @@ export const CreateTenantDialog = ({
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Отель Paradise"
+                placeholder="Моя Компания"
               />
             </div>
           </div>

@@ -34,9 +34,9 @@ const GuestView = ({
           <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">
             <CardTitle className="flex items-center gap-2">
               <Icon name="MessageCircle" size={20} />
-              {pageSettings?.page_title || 'Чат с консьержем'}
+              {pageSettings?.page_title || 'AI-консультант'}
             </CardTitle>
-            <CardDescription>{pageSettings?.page_subtitle || 'Спросите о номерах, услугах и инфраструктуре'}</CardDescription>
+            <CardDescription>{pageSettings?.page_subtitle || 'Задайте любой вопрос о наших услугах'}</CardDescription>
           </CardHeader>
           <CardContent className="p-0 flex flex-col h-[calc(100%-100px)]">
             <ScrollArea className="flex-1 p-6">

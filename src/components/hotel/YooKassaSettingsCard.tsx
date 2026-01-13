@@ -110,7 +110,7 @@ const YooKassaSettingsCard = ({ createPaymentUrl, webhookUrl }: YooKassaSettings
              'Не настроена'}
           </Badge>
         </div>
-        <CardDescription>Прием платежей от гостей отеля</CardDescription>
+        <CardDescription>Прием платежей от клиентов</CardDescription>
       </CardHeader>
       <CardContent className="pt-6 space-y-6">
         <div className="space-y-4">

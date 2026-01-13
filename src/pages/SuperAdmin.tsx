@@ -155,18 +155,18 @@ const SuperAdmin = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Icon name="Settings" size={20} />
-                Управление настройками отелей
+                Управление настройками клиентов
               </CardTitle>
               <CardDescription>
-                Перейдите в админку любого отеля для полного доступа ко всем настройкам
+                Перейдите в админку любого клиента для полного доступа ко всем настройкам
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="tenant-select">Выберите отель</Label>
+                <Label htmlFor="tenant-select">Выберите клиента</Label>
                 <Select value={selectedTenant} onValueChange={setSelectedTenant}>
                   <SelectTrigger id="tenant-select">
-                    <SelectValue placeholder="Выберите отель из списка" />
+                    <SelectValue placeholder="Выберите клиента из списка" />
                   </SelectTrigger>
                   <SelectContent>
                     {tenants.map((tenant) => (

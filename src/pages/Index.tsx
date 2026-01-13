@@ -15,7 +15,7 @@ const Index = () => {
     { 
       id: '1', 
       role: 'assistant', 
-      content: 'Здравствуйте! Я виртуальный консьерж отеля. Чем могу помочь?', 
+      content: 'Здравствуйте! Я ваш виртуальный помощник. Чем могу помочь?', 
       timestamp: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
     }
   ]);

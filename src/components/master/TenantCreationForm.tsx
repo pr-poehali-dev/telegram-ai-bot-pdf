@@ -42,7 +42,7 @@ export const TenantCreationForm = ({
               id="slug"
               value={formData.slug}
               onChange={(e) => onChange({ ...formData, slug: e.target.value })}
-              placeholder="hotel-pushkin"
+              placeholder="my-business"
             />
           </div>
           <div>
@@ -51,7 +51,7 @@ export const TenantCreationForm = ({
               id="name"
               value={formData.name}
               onChange={(e) => onChange({ ...formData, name: e.target.value })}
-              placeholder="Отель Пушкин"
+              placeholder="Моя Компания"
             />
           </div>
         </div>

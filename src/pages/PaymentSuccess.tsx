@@ -79,7 +79,7 @@ const PaymentSuccess = () => {
                 <div>
                   <p className="font-medium text-slate-900">Загрузите документы</p>
                   <p className="text-sm text-slate-600">
-                    Добавьте PDF-файлы с информацией об отеле
+                    Добавьте PDF-файлы с информацией о вашем бизнесе
                   </p>
                 </div>
               </div>

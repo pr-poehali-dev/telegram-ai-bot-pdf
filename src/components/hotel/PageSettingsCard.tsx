@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { BACKEND_URLS, PageSettings, QuickQuestion } from './types';
-import { authenticatedFetch, getTenantId } from '@/lib/auth';
+import { authenticatedFetch, getTenantId, isSuperAdmin } from '@/lib/auth';
 import { HeaderSettingsSection } from './HeaderSettingsSection';
 import { ChatSettingsSection } from './ChatSettingsSection';
 import { ContactsSettingsSection } from './ContactsSettingsSection';
@@ -14,17 +14,17 @@ import { QuickQuestionsSection } from './QuickQuestionsSection';
 
 const PageSettingsCard = () => {
   const [settings, setSettings] = useState<PageSettings>({
-    header_icon: 'Hotel',
-    header_title: 'Отель Пушкин',
-    header_subtitle: 'AI Консьерж',
-    page_title: 'Консьерж отеля',
-    page_subtitle: 'Спросите о номерах, услугах и инфраструктуре',
+    header_icon: 'MessageSquare',
+    header_title: 'AI-консультант',
+    header_subtitle: 'Ваш бизнес-ассистент',
+    page_title: 'Здравствуйте!',
+    page_subtitle: 'Задайте любой вопрос о наших услугах',
     quick_questions_title: 'Быстрые вопросы',
     contacts_title: 'Контакты',
-    contact_phone_label: 'Ресепшн',
+    contact_phone_label: 'Телефон',
     contact_phone_value: '+7 (495) 123-45-67',
     contact_email_label: 'Email',
-    contact_email_value: 'info@hotel.ru',
+    contact_email_value: 'info@example.ru',
     contact_address_label: 'Адрес',
     contact_address_value: 'Москва, ул. Примерная, 1',
     footer_text: 'Хочу такого бота!',
@@ -33,10 +33,10 @@ const PageSettingsCard = () => {
   });
 
   const [quickQuestions, setQuickQuestions] = useState<QuickQuestion[]>([
-    { text: 'Номера', question: 'Какие номера доступны?', icon: 'Hotel' },
-    { text: 'Услуги', question: 'Какие услуги предоставляет отель?', icon: 'Sparkles' },
-    { text: 'Завтрак', question: 'Во сколько подают завтрак?', icon: 'Coffee' },
-    { text: 'Бассейн', question: 'Есть ли бассейн?', icon: 'Waves' }
+    { text: 'Услуги', question: 'Какие услуги вы предоставляете?', icon: 'Sparkles' },
+    { text: 'Цены', question: 'Сколько стоят ваши услуги?', icon: 'DollarSign' },
+    { text: 'Работа', question: 'Какой у вас график работы?', icon: 'Clock' },
+    { text: 'Контакты', question: 'Как с вами связаться?', icon: 'Phone' }
   ]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -166,6 +166,31 @@ const PageSettingsCard = () => {
             onRemoveQuestion={handleRemoveQuestion}
             onUpdateQuestion={handleUpdateQuestion}
           />
+
+          {isSuperAdmin() && (
+            <div className="pt-4">
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">Футер</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="footer_text">Текст ссылки</Label>
+                  <Input
+                    id="footer_text"
+                    value={settings.footer_text}
+                    onChange={(e) => setSettings({ ...settings, footer_text: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="footer_link">URL ссылки</Label>
+                  <Input
+                    id="footer_link"
+                    value={settings.footer_link}
+                    onChange={(e) => setSettings({ ...settings, footer_link: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end pt-4 border-t">
