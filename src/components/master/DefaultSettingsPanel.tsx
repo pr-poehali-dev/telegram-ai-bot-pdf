@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URL = 'https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8';
+const TEST_EMAIL_URL = 'https://functions.poehali.dev/5e89e2e7-e90d-4b6f-930f-7a283f326cf5';
 
 interface SettingValue {
   value: string;
@@ -24,6 +25,8 @@ const DefaultSettingsPanel = () => {
   const [editedSettings, setEditedSettings] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [isSendingTest, setIsSendingTest] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -104,6 +107,44 @@ const DefaultSettingsPanel = () => {
 
   const isSmallInput = (key: string) => ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'yookassa_shop_id', 'yookassa_secret_key'].includes(key);
 
+  const handleTestEmail = async (settingKey: string) => {
+    if (!testEmail) {
+      toast({ title: 'Ошибка', description: 'Укажите email для тестовой отправки', variant: 'destructive' });
+      return;
+    }
+
+    setIsSendingTest(settingKey);
+    try {
+      const templateTypeMap: { [key: string]: string } = {
+        'email_template_order_customer': 'order_customer',
+        'email_template_order_admin': 'order_admin',
+        'email_template_welcome': 'welcome'
+      };
+
+      const response = await fetch(TEST_EMAIL_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          test_email: testEmail,
+          template_html: editedSettings[settingKey] || settings[settingKey]?.value || '',
+          template_type: templateTypeMap[settingKey] || 'test'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({ title: 'Успешно', description: `Тестовое письмо отправлено на ${testEmail}` });
+      } else {
+        throw new Error(data.error || 'Не удалось отправить');
+      }
+    } catch (error: any) {
+      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsSendingTest(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -170,6 +211,30 @@ const DefaultSettingsPanel = () => {
 
       <div>
         <h3 className="text-xl font-semibold mb-4">✉️ Email шаблоны</h3>
+        
+        <Card className="mb-6 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Icon name="TestTube2" size={20} />
+              Тестовая отправка
+            </CardTitle>
+            <CardDescription>
+              Укажите email для тестовой отправки шаблонов
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="test@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                className="flex-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="space-y-6">
           {Object.keys(settings).filter(key => settingCategories[key] === 'email_templates').map(key => (
             <Card key={key}>
@@ -198,22 +263,43 @@ const DefaultSettingsPanel = () => {
                     placeholder="<html>...</html>"
                   />
                 </div>
-                <Button
-                  onClick={() => handleSave(key)}
-                  disabled={isSaving || editedSettings[key] === settings[key].value}
-                >
-                  {isSaving ? (
-                    <>
-                      <Icon name="Loader2" className="animate-spin mr-2" size={16} />
-                      Сохранение...
-                    </>
-                  ) : (
-                    <>
-                      <Icon name="Save" className="mr-2" size={16} />
-                      Сохранить
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => handleSave(key)}
+                    disabled={isSaving || editedSettings[key] === settings[key].value}
+                    className="flex-1"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                        Сохранение...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="Save" className="mr-2" size={16} />
+                        Сохранить
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => handleTestEmail(key)}
+                    disabled={isSendingTest === key || !testEmail}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    {isSendingTest === key ? (
+                      <>
+                        <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                        Отправка...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="Send" className="mr-2" size={16} />
+                        Отправить тест
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
