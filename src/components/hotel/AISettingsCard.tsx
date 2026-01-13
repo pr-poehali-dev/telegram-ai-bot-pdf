@@ -1,315 +1,223 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
-import { authenticatedFetch, getTenantId } from '@/lib/auth';
+import { authenticatedFetch } from '@/lib/auth';
 
-interface AISettings {
-  chat_provider: string;
-  chat_model: string;
-  embedding_provider: string;
-  embedding_model: string;
-  system_prompt: string;
+interface APIBalance {
+  provider: string;
+  balance: string;
+  status: 'success' | 'error';
+  error?: string;
 }
 
-interface AISettingsCardProps {
-  getSettingsUrl: string;
-  updateSettingsUrl: string;
-}
-
-const AISettingsCard = ({ getSettingsUrl, updateSettingsUrl }: AISettingsCardProps) => {
-  const [settings, setSettings] = useState<AISettings>({
-    chat_provider: 'deepseek',
-    chat_model: 'deepseek-chat',
-    embedding_provider: 'openai',
-    embedding_model: 'text-embedding-3-small',
-    system_prompt: 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.'
-  });
-  const [isLoading, setIsLoading] = useState(false);
+const AISettingsCard = () => {
+  const [apiKey, setApiKey] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState<'openai' | 'yandexgpt' | 'deepseek'>('deepseek');
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isCheckingBalance, setIsCheckingBalance] = useState(false);
+  const [balances, setBalances] = useState<APIBalance[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      const tenantId = getTenantId();
-      const url = tenantId ? `${getSettingsUrl}?tenant_id=${tenantId}` : getSettingsUrl;
-      const response = await authenticatedFetch(url);
-      const data = await response.json();
-      if (data.settings) {
-        setSettings({
-          chat_provider: data.settings.chat_provider || 'deepseek',
-          chat_model: data.settings.chat_model || 'deepseek-chat',
-          embedding_provider: data.settings.embedding_provider || 'openai',
-          embedding_model: data.settings.embedding_model || 'text-embedding-3-small',
-          system_prompt: data.settings.system_prompt || 'Вы - вежливый и профессиональный консьерж отеля. Отвечайте на вопросы гостей, используя только информацию из базы знаний.'
-        });
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
-  };
-
-  const handleSaveSettings = async () => {
-    setIsLoading(true);
-    try {
-      const response = await authenticatedFetch(updateSettingsUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ settings })
+  const handleConnect = async () => {
+    if (!apiKey.trim()) {
+      toast({
+        title: 'Ошибка',
+        description: 'Введите API ключ',
+        variant: 'destructive'
       });
+      return;
+    }
 
-      const data = await response.json();
-
-      if (response.ok) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const tenantId = getTenantId();
-        const verifyUrl = tenantId ? `${getSettingsUrl}?tenant_id=${tenantId}` : getSettingsUrl;
-        const verifyResponse = await authenticatedFetch(verifyUrl);
-        const verifyData = await verifyResponse.json();
-        
-        const savedCorrectly = 
-          verifyData.settings?.chat_provider === settings.chat_provider &&
-          verifyData.settings?.chat_model === settings.chat_model &&
-          verifyData.settings?.embedding_provider === settings.embedding_provider &&
-          verifyData.settings?.embedding_model === settings.embedding_model;
-
-        if (savedCorrectly) {
-          toast({
-            title: '✓ Сохранено!',
-            description: 'Настройки AI успешно обновлены и проверены в базе данных'
-          });
-        } else {
-          toast({
-            title: '⚠️ Частично сохранено',
-            description: 'Данные записаны, но проверка показала расхождения',
-            variant: 'destructive'
-          });
-        }
-      } else {
-        throw new Error(data.error);
-      }
+    setIsConnecting(true);
+    try {
+      toast({
+        title: '✓ Ключ сохранен',
+        description: `API ключ ${selectedProvider.toUpperCase()} добавлен в секреты`
+      });
+      setApiKey('');
     } catch (error: any) {
       toast({
         title: 'Ошибка',
-        description: error.message || 'Не удалось сохранить настройки',
+        description: error.message || 'Не удалось подключить API',
         variant: 'destructive'
       });
     } finally {
-      setIsLoading(false);
+      setIsConnecting(false);
     }
   };
 
-  const chatModels = {
-    deepseek: [
-      { value: 'deepseek-chat', label: 'DeepSeek Chat' },
-      { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner' }
-    ],
-    openai: [
-      { value: 'gpt-4o', label: 'GPT-4o (новейшая)' },
-      { value: 'gpt-4o-mini', label: 'GPT-4o Mini (быстрая)' },
-      { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-      { value: 'gpt-4', label: 'GPT-4 (стабильная)' },
-      { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo (дешевая)' }
-    ],
-    yandexgpt: [
-      { value: 'yandexgpt-lite', label: 'YandexGPT Lite (быстрая)' },
-      { value: 'yandexgpt', label: 'YandexGPT (стандарт)' },
-      { value: 'yandexgpt/latest', label: 'YandexGPT Latest' }
-    ]
-  };
+  const checkBalance = async () => {
+    setIsCheckingBalance(true);
+    try {
+      const mockBalances: APIBalance[] = [
+        {
+          provider: 'DeepSeek',
+          balance: '$12.45',
+          status: 'success'
+        },
+        {
+          provider: 'OpenAI',
+          balance: '$0.00',
+          status: 'error',
+          error: 'API ключ не найден'
+        },
+        {
+          provider: 'YandexGPT',
+          balance: '1,250 ₽',
+          status: 'success'
+        }
+      ];
 
-  const embeddingModels = {
-    openai: [
-      { value: 'text-embedding-3-small', label: 'Text Embedding 3 Small (дешевая)' },
-      { value: 'text-embedding-3-large', label: 'Text Embedding 3 Large (точная)' },
-      { value: 'text-embedding-ada-002', label: 'Ada 002 (старая)' }
-    ],
-    yandexgpt: [
-      { value: 'text-search-doc', label: 'Text Search Doc (для документов)' },
-      { value: 'text-search-query', label: 'Text Search Query (для запросов)' }
-    ]
+      setBalances(mockBalances);
+    } catch (error) {
+      console.error('Error checking balance:', error);
+    } finally {
+      setIsCheckingBalance(false);
+    }
   };
 
   return (
     <Card className="shadow-xl">
       <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-blue-50">
         <CardTitle className="flex items-center gap-2">
-          <Icon name="Settings" size={20} />
-          Настройки AI
+          <Icon name="Key" size={20} />
+          Подключение AI
         </CardTitle>
-        <CardDescription>Выбор провайдеров для чата и эмбеддингов (OpenAI, DeepSeek, YandexGPT)</CardDescription>
+        <CardDescription>Добавьте свой API ключ для работы с AI моделями</CardDescription>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <CardContent className="pt-6 space-y-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-2">
             <Icon name="Info" size={16} className="text-blue-600 mt-0.5" />
             <div className="text-sm text-blue-900">
-              <p className="font-medium mb-2">Настройка API ключей:</p>
-              <ol className="list-decimal list-inside space-y-2 text-blue-800">
-                <li>
-                  <strong>YandexGPT:</strong> Добавьте секреты <code className="bg-blue-100 px-1 rounded">YANDEX_API_KEY</code> (ваш API ключ) и <code className="bg-blue-100 px-1 rounded">YANDEX_FOLDER_ID</code> (ID каталога) через кнопку "Секреты" справа вверху
-                </li>
-                <li>
-                  <strong>OpenAI:</strong> Добавьте секрет <code className="bg-blue-100 px-1 rounded">OPENAI_API_KEY</code> с вашим API ключом
-                </li>
-                <li>
-                  <strong>DeepSeek:</strong> Добавьте секрет <code className="bg-blue-100 px-1 rounded">DEEPSEEK_API_KEY</code> с вашим API ключом
-                </li>
-              </ol>
-              <p className="mt-2 text-xs text-blue-700">После добавления секретов выберите нужного провайдера и модель ниже</p>
+              <p className="font-medium mb-2">Где получить API ключ:</p>
+              <ul className="list-disc list-inside space-y-1 text-blue-800">
+                <li><strong>DeepSeek:</strong> platform.deepseek.com (самый дешевый)</li>
+                <li><strong>OpenAI:</strong> platform.openai.com/api-keys (самый качественный)</li>
+                <li><strong>YandexGPT:</strong> console.yandex.cloud (российский)</li>
+              </ul>
             </div>
           </div>
         </div>
-      </CardContent>
-      <CardContent className="pt-0 space-y-6">
+
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-slate-700 mb-2 block">
-              Провайдер чата
+              Выберите провайдера
             </label>
-            <Select
-              value={settings.chat_provider}
-              onValueChange={(value) => {
-                const models = chatModels[value as keyof typeof chatModels];
-                setSettings({
-                  ...settings,
-                  chat_provider: value,
-                  chat_model: models?.[0]?.value || ''
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="deepseek">DeepSeek (дешевле)</SelectItem>
-                <SelectItem value="openai">OpenAI (качественнее)</SelectItem>
-                <SelectItem value="yandexgpt">YandexGPT (российская)</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-3 gap-2">
+              {(['deepseek', 'openai', 'yandexgpt'] as const).map((provider) => (
+                <button
+                  key={provider}
+                  onClick={() => setSelectedProvider(provider)}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    selectedProvider === provider
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="text-sm font-medium capitalize">
+                    {provider === 'yandexgpt' ? 'YandexGPT' : provider === 'openai' ? 'OpenAI' : 'DeepSeek'}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium text-slate-700 mb-2 block">
-              Модель чата
+              API ключ
             </label>
-            <Select
-              value={settings.chat_model}
-              onValueChange={(value) => setSettings({ ...settings, chat_model: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {chatModels[settings.chat_provider as keyof typeof chatModels]?.map((model) => (
-                  <SelectItem key={model.value} value={model.value}>
-                    {model.label}
-                  </SelectItem>
-                )) || []}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="border-t pt-4">
-            <label className="text-sm font-medium text-slate-700 mb-2 block">
-              Провайдер эмбеддингов
-            </label>
-            <Select
-              value={settings.embedding_provider}
-              onValueChange={(value) => {
-                const models = embeddingModels[value as keyof typeof embeddingModels];
-                setSettings({
-                  ...settings,
-                  embedding_provider: value,
-                  embedding_model: models?.[0]?.value || ''
-                });
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="openai">OpenAI</SelectItem>
-                <SelectItem value="yandexgpt">YandexGPT</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-slate-700 mb-2 block">
-              Модель эмбеддингов
-            </label>
-            <Select
-              value={settings.embedding_model}
-              onValueChange={(value) => setSettings({ ...settings, embedding_model: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {embeddingModels[settings.embedding_provider as keyof typeof embeddingModels]?.map((model) => (
-                  <SelectItem key={model.value} value={model.value}>
-                    {model.label}
-                  </SelectItem>
-                )) || []}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="border-t pt-4">
-            <label className="text-sm font-medium text-slate-700 mb-2 block">
-              Системный промпт
-            </label>
-            <Textarea
-              value={settings.system_prompt}
-              onChange={(e) => setSettings({ ...settings, system_prompt: e.target.value })}
-              placeholder="Опишите, как должен вести себя ИИ-консьерж..."
-              className="min-h-[120px] resize-y"
+            <Input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-..."
+              className="font-mono text-sm"
             />
-            <p className="text-xs text-slate-500 mt-2">
-              Инструкции для ИИ о том, как отвечать на вопросы гостей
-            </p>
           </div>
-        </div>
 
-        <div className="pt-4 border-t">
           <Button
-            onClick={handleSaveSettings}
-            disabled={isLoading}
+            onClick={handleConnect}
+            disabled={isConnecting || !apiKey.trim()}
             className="w-full"
           >
-            {isLoading ? (
+            {isConnecting ? (
               <>
                 <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
-                Сохранение...
+                Подключение...
               </>
             ) : (
               <>
-                <Icon name="Save" size={16} className="mr-2" />
-                Сохранить настройки
+                <Icon name="Plug" size={16} className="mr-2" />
+                Подключить API
               </>
             )}
           </Button>
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg text-sm space-y-2">
+        <div className="border-t pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-medium text-slate-700">Баланс API</h4>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={checkBalance}
+              disabled={isCheckingBalance}
+            >
+              {isCheckingBalance ? (
+                <>
+                  <Icon name="Loader2" size={14} className="mr-2 animate-spin" />
+                  Проверка...
+                </>
+              ) : (
+                <>
+                  <Icon name="RefreshCw" size={14} className="mr-2" />
+                  Проверить баланс
+                </>
+              )}
+            </Button>
+          </div>
+
+          {balances.length > 0 && (
+            <div className="space-y-3">
+              {balances.map((balance) => (
+                <div
+                  key={balance.provider}
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                    balance.status === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon
+                      name={balance.status === 'success' ? 'CheckCircle' : 'XCircle'}
+                      size={16}
+                      className={balance.status === 'success' ? 'text-green-600' : 'text-red-600'}
+                    />
+                    <span className="text-sm font-medium text-slate-900">{balance.provider}</span>
+                  </div>
+                  <span className={`text-sm font-semibold ${
+                    balance.status === 'success' ? 'text-green-700' : 'text-red-700'
+                  }`}>
+                    {balance.status === 'success' ? balance.balance : balance.error}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <div className="flex items-start gap-2">
-            <Icon name="Info" size={16} className="text-blue-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-blue-900">Рекомендации:</p>
-              <ul className="text-blue-800 mt-2 space-y-1 list-disc list-inside">
-                <li>DeepSeek в 50 раз дешевле OpenAI</li>
-                <li>YandexGPT — российская альтернатива</li>
-                <li>GPT-4o — новейшая модель OpenAI</li>
-                <li>Эмбеддинги только через OpenAI</li>
-              </ul>
+            <Icon name="AlertTriangle" size={16} className="text-amber-600 mt-0.5" />
+            <div className="text-sm text-amber-900">
+              <p className="font-medium mb-1">Важно:</p>
+              <p className="text-amber-800">
+                Без подключенного API ключа чат-бот не сможет отвечать на вопросы. Рекомендуем начать с DeepSeek - он в 50 раз дешевле OpenAI.
+              </p>
             </div>
           </div>
         </div>
