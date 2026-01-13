@@ -37,16 +37,16 @@ export const FooterSection = () => {
             </div>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">О компании</h3>
+            <h3 className="text-lg font-semibold mb-4">Реквизиты</h3>
             <div className="space-y-2 text-slate-400">
-              <p>ООО "СТРОЙКУПОН"</p>
-              <p>ИНН: 9111034869</p>
-              <p>ОГРН: 1199112023059</p>
+              <p>Плательщик НПД</p>
+              <p>Прохоров С. В.</p>
+              <p>ИНН: 910800040469</p>
             </div>
           </div>
         </div>
         <div className="border-t border-slate-800 pt-8 text-center text-slate-400">
-          <p>&copy; 2024 ООО "СТРОЙКУПОН". Все права защищены.</p>
+          <p>&copy; {new Date().getFullYear()} Прохоров С. В. Все права защищены.</p>
         </div>
       </div>
     </div>
