@@ -20,24 +20,17 @@ export const DocumentsPanel = ({
   onFileUpload,
   onDeleteDocument
 }: DocumentsPanelProps) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const tariffId = getTariffId();
   const limits = getTariffLimits(tariffId);
   const canUpload = canUploadMoreDocuments(documents.length, tariffId);
 
-  const categories = useMemo(() => {
-    const cats = new Set(documents.map(d => d.category));
-    return ['all', ...Array.from(cats)];
-  }, [documents]);
-
   const filteredDocuments = useMemo(() => {
     return documents.filter(doc => {
-      const categoryMatch = selectedCategory === 'all' || doc.category === selectedCategory;
       const statusMatch = selectedStatus === 'all' || doc.status === selectedStatus;
-      return categoryMatch && statusMatch;
+      return statusMatch;
     });
-  }, [documents, selectedCategory, selectedStatus]);
+  }, [documents, selectedStatus]);
 
   const scrollAreaHeight = useMemo(() => {
     const count = filteredDocuments.length;
@@ -59,28 +52,15 @@ export const DocumentsPanel = ({
             </CardTitle>
             <CardDescription>{filteredDocuments.length} из {documents.length} документов</CardDescription>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>
-                  {cat === 'all' ? 'Все категории' : cat}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">Все статусы</option>
-              <option value="ready">Готовы</option>
-              <option value="processing">Обработка</option>
-            </select>
-          </div>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="all">Все статусы</option>
+            <option value="ready">Готовы</option>
+            <option value="processing">Обработка</option>
+          </select>
         </div>
       </CardHeader>
       <CardContent className="pt-6 pb-4">
@@ -160,7 +140,6 @@ export const DocumentsPanel = ({
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-slate-900 break-words whitespace-normal mb-2">{doc.name}</p>
                       <div className="flex items-center gap-2 flex-wrap mb-2">
-                        <span className="text-xs px-2 py-0.5 bg-slate-100 rounded text-slate-700">{doc.category}</span>
                         {doc.pages > 0 && <span className="text-xs text-slate-600">{doc.pages} стр.</span>}
                         <span className="text-xs text-slate-600">{doc.size}</span>
                       </div>
