@@ -173,12 +173,23 @@ export const OrderFormSection = ({ selectedTariff }: OrderFormSectionProps) => {
                   <Icon name="Info" size={20} className="text-primary mt-1 flex-shrink-0" />
                   <div className="text-sm text-slate-700">
                     <p className="font-semibold mb-1">Что будет дальше:</p>
-                    <ul className="space-y-1 list-disc list-inside">
-                      <li>Оплатите выбранный тариф</li>
-                      <li>Мы свяжемся с вами в течение 2 часов</li>
-                      <li>Настроим AI-консультанта за 24 часа</li>
-                      <li>Вы получите готовое решение и инструкции</li>
-                    </ul>
+                    {formData.tariff === 'enterprise' ? (
+                      <ul className="space-y-1 list-disc list-inside">
+                        <li>Оплатите тариф Премиум</li>
+                        <li>Система автоматически создаст ваш аккаунт</li>
+                        <li>Личный менеджер свяжется с вами в течение 2 часов</li>
+                        <li>Настроим всё под ключ: загрузим документы, настроим мессенджеры</li>
+                        <li>Вы получите готового AI-консультанта с полной поддержкой</li>
+                      </ul>
+                    ) : (
+                      <ul className="space-y-1 list-disc list-inside">
+                        <li>Оплатите выбранный тариф</li>
+                        <li>Система автоматически создаст ваш аккаунт за 30 секунд</li>
+                        <li>Вы сразу получите доступ в личный кабинет</li>
+                        <li>Загрузите документы и настройте бота самостоятельно</li>
+                        <li>Начните принимать вопросы клиентов уже сегодня</li>
+                      </ul>
+                    )}
                   </div>
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { HeroSection } from './HeroSection';
 import { FeaturesSection } from './FeaturesSection';
 import { SecuritySection } from './SecuritySection';
 import { PricingSection } from './PricingSection';
+import { FAQSection } from './FAQSection';
 import { OrderFormSection } from './OrderFormSection';
 import { FooterSection } from './FooterSection';
 
@@ -20,6 +21,7 @@ const LandingPage = () => {
       <FeaturesSection />
       <SecuritySection />
       <PricingSection onPlanSelect={scrollToForm} />
+      <FAQSection />
       <OrderFormSection selectedTariff={selectedTariff} />
       <FooterSection />
     </div>

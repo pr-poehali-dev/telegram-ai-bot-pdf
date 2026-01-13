@@ -5,7 +5,10 @@ interface HeroSectionProps {
   onOrderClick: () => void;
 }
 
-export const HeroSection = ({ onOrderClick }: HeroSectionProps) => {
+export const HeroSection = ({ }: HeroSectionProps) => {
+  const scrollToPricing = () => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  };
   return (
     <div className="container mx-auto px-4 py-16 md:py-24">
       <div className="text-center max-w-5xl mx-auto">
@@ -26,7 +29,7 @@ export const HeroSection = ({ onOrderClick }: HeroSectionProps) => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Button size="lg" onClick={onOrderClick} className="text-lg px-10 py-6 shadow-xl hover:shadow-2xl transition-all">
+          <Button size="lg" onClick={scrollToPricing} className="text-lg px-10 py-6 shadow-xl hover:shadow-2xl transition-all">
             <Icon name="Zap" className="mr-2" size={20} />
             Запустить за 1 день
           </Button>
