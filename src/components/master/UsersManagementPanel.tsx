@@ -28,13 +28,28 @@ interface User {
   created_at: string;
 }
 
+interface Payment {
+  id: number;
+  payment_id: string;
+  amount: number;
+  status: string;
+  tariff_id: string;
+  tariff_name: string;
+  payment_type: string;
+  created_at: string;
+}
+
 const UsersManagementPanel = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingSubscriptions, setIsCheckingSubscriptions] = useState(false);
   const [showExtendDialog, setShowExtendDialog] = useState(false);
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<number | null>(null);
+  const [selectedTenantName, setSelectedTenantName] = useState<string>('');
   const [extendMonths, setExtendMonths] = useState<number>(1);
+  const [paymentHistory, setPaymentHistory] = useState<Payment[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -106,6 +121,20 @@ const UsersManagementPanel = () => {
     }
   };
 
+  const loadPaymentHistory = async (tenantId: number) => {
+    setIsLoadingHistory(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}?action=payment_history&tenant_id=${tenantId}`);
+      const data = await response.json();
+      setPaymentHistory(data.payments || []);
+    } catch (error) {
+      console.error('Error loading payment history:', error);
+      toast({ title: 'Ошибка', description: 'Не удалось загрузить историю платежей', variant: 'destructive' });
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
   const handleExtendSubscription = async () => {
     if (!selectedTenant) return;
     
@@ -120,6 +149,7 @@ const UsersManagementPanel = () => {
         toast({ title: 'Успешно', description: `Подписка продлена на ${extendMonths} мес.` });
         setShowExtendDialog(false);
         setSelectedTenant(null);
+        setSelectedTenantName('');
         setExtendMonths(1);
         loadUsers();
       } else {
@@ -259,17 +289,31 @@ const UsersManagementPanel = () => {
                       <span className="text-sm">Публичный доступ</span>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      setSelectedTenant(user.tenant_id);
-                      setShowExtendDialog(true);
-                    }}
-                  >
-                    <Icon name="CalendarPlus" className="mr-2" size={16} />
-                    Продлить подписку
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTenant(user.tenant_id);
+                        setSelectedTenantName(user.tenant_name);
+                        setShowExtendDialog(true);
+                      }}
+                    >
+                      <Icon name="CalendarPlus" className="mr-2" size={16} />
+                      Продлить подписку
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTenant(user.tenant_id);
+                        setSelectedTenantName(user.tenant_name);
+                        setShowPaymentHistory(true);
+                        loadPaymentHistory(user.tenant_id);
+                      }}
+                    >
+                      <Icon name="CreditCard" className="mr-2" size={16} />
+                      История платежей
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -282,7 +326,7 @@ const UsersManagementPanel = () => {
           <DialogHeader>
             <DialogTitle>Продлить подписку</DialogTitle>
             <DialogDescription>
-              Бесплатное продление подписки администратором
+              {selectedTenantName} — Бесплатное продление администратором
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -303,12 +347,66 @@ const UsersManagementPanel = () => {
             <div className="flex gap-2">
               <Button onClick={handleExtendSubscription} className="flex-1">
                 <Icon name="Check" className="mr-2" size={16} />
-                Продлить
+                Продлить бесплатно
               </Button>
               <Button variant="outline" onClick={() => setShowExtendDialog(false)}>
                 Отмена
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPaymentHistory} onOpenChange={setShowPaymentHistory}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>История платежей</DialogTitle>
+            <DialogDescription>
+              {selectedTenantName} — Все платежи по подписке
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {isLoadingHistory ? (
+              <div className="flex items-center justify-center p-8">
+                <Icon name="Loader2" className="animate-spin" size={24} />
+              </div>
+            ) : paymentHistory.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Icon name="CreditCard" size={48} className="mx-auto mb-4 opacity-50" />
+                <p>Пока нет платежей</p>
+              </div>
+            ) : (
+              paymentHistory.map((payment) => (
+                <Card key={payment.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={payment.status === 'succeeded' ? 'default' : 'secondary'}>
+                            {payment.status === 'succeeded' ? 'Успешно' : payment.status}
+                          </Badge>
+                          <Badge variant="outline">
+                            {payment.payment_type === 'initial' ? 'Первый платеж' : 'Продление'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          ID: {payment.payment_id}
+                        </p>
+                        <p className="text-sm">
+                          Тариф: <span className="font-medium">{payment.tariff_name}</span>
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">{payment.amount.toLocaleString('ru-RU')} ₽</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(payment.created_at).toLocaleString('ru-RU')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </DialogContent>
       </Dialog>

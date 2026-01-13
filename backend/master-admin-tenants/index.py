@@ -57,6 +57,8 @@ def handler(event: dict, context) -> dict:
             return handle_extend_subscription(method, event, cur, conn)
         elif action == 'get_subscription':
             return handle_get_subscription(method, event, cur, conn)
+        elif action == 'payment_history':
+            return handle_payment_history(method, event, cur, conn)
 
         if method == 'GET':
             cur.execute("""
@@ -758,6 +760,55 @@ def handle_get_subscription(method, event, cur, conn):
                     'days_left': days_left
                 }
             }), 
+            'isBase64Encoded': False
+        }
+    except Exception as e:
+        cur.close()
+        conn.close()
+        return {'statusCode': 500, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': str(e)}), 'isBase64Encoded': False}
+
+def handle_payment_history(method, event, cur, conn):
+    """Получение истории платежей тенанта"""
+    if method != 'GET':
+        return {'statusCode': 405, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'Method not allowed'}), 'isBase64Encoded': False}
+    
+    try:
+        query_params = event.get('queryStringParameters') or {}
+        tenant_id = query_params.get('tenant_id')
+        
+        if not tenant_id:
+            return {'statusCode': 400, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'tenant_id required'}), 'isBase64Encoded': False}
+        
+        cur.execute("""
+            SELECT sp.id, sp.payment_id, sp.amount, sp.status, sp.tariff_id, 
+                   sp.payment_type, sp.created_at, tp.name as tariff_name
+            FROM t_p56134400_telegram_ai_bot_pdf.subscription_payments sp
+            LEFT JOIN t_p56134400_telegram_ai_bot_pdf.tariff_plans tp ON tp.id = sp.tariff_id
+            WHERE sp.tenant_id = %s
+            ORDER BY sp.created_at DESC
+        """, (tenant_id,))
+        
+        rows = cur.fetchall()
+        payments = []
+        for row in rows:
+            payments.append({
+                'id': row[0],
+                'payment_id': row[1],
+                'amount': float(row[2]) if row[2] else 0,
+                'status': row[3],
+                'tariff_id': row[4],
+                'payment_type': row[5],
+                'created_at': row[6].isoformat() if row[6] else None,
+                'tariff_name': row[7] or 'Неизвестный'
+            })
+        
+        cur.close()
+        conn.close()
+        
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'payments': payments}),
             'isBase64Encoded': False
         }
     except Exception as e:
