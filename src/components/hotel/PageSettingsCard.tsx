@@ -166,29 +166,6 @@ const PageSettingsCard = () => {
             onRemoveQuestion={handleRemoveQuestion}
             onUpdateQuestion={handleUpdateQuestion}
           />
-
-          <div className="pt-4">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Футер</h3>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="footer_text">Текст ссылки</Label>
-                <Input
-                  id="footer_text"
-                  value={settings.footer_text}
-                  onChange={(e) => setSettings({ ...settings, footer_text: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="footer_link">URL ссылки</Label>
-                <Input
-                  id="footer_link"
-                  value={settings.footer_link}
-                  onChange={(e) => setSettings({ ...settings, footer_link: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="flex justify-end pt-4 border-t">

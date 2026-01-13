@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CompanyInfo {
   name: string;
@@ -16,6 +17,14 @@ interface CompanyInfo {
   phone: string;
   address: string;
   legalForm: string;
+}
+
+interface Tenant {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  owner_email: string;
 }
 
 const STORAGE_KEY = 'company_info';
@@ -31,6 +40,8 @@ const SuperAdmin = () => {
     address: 'Республика Крым, г. Феодосия',
     legalForm: 'Плательщик НПД'
   });
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [selectedTenant, setSelectedTenant] = useState<string>('');
 
   useEffect(() => {
     if (!isSuperAdmin()) {
@@ -40,7 +51,20 @@ const SuperAdmin = () => {
     if (saved) {
       setCompanyInfo(JSON.parse(saved));
     }
+    loadTenants();
   }, [navigate]);
+
+  const loadTenants = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8');
+      const data = await response.json();
+      if (data.tenants) {
+        setTenants(data.tenants);
+      }
+    } catch (error) {
+      console.error('Error loading tenants:', error);
+    }
+  };
 
   const handleSave = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(companyInfo));
@@ -123,6 +147,43 @@ const SuperAdmin = () => {
               <Button onClick={handleSave}>
                 <Icon name="Save" className="mr-2" size={16} />
                 Сохранить реквизиты
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="Settings" size={20} />
+                Управление настройками отелей
+              </CardTitle>
+              <CardDescription>
+                Перейдите в админку любого отеля для полного доступа ко всем настройкам
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="tenant-select">Выберите отель</Label>
+                <Select value={selectedTenant} onValueChange={setSelectedTenant}>
+                  <SelectTrigger id="tenant-select">
+                    <SelectValue placeholder="Выберите отель из списка" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.slug}>
+                        {tenant.name} (/{tenant.slug})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                onClick={() => selectedTenant && navigate(`/${selectedTenant}/admin`)}
+                disabled={!selectedTenant}
+                className="w-full"
+              >
+                <Icon name="ArrowRight" className="mr-2" size={16} />
+                Перейти в админку
               </Button>
             </CardContent>
           </Card>

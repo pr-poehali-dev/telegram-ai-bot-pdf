@@ -46,18 +46,8 @@ export const FooterSection = () => {
             </div>
           </div>
         </div>
-        <div className="border-t border-slate-800 pt-8 text-center text-slate-400 space-y-3">
+        <div className="border-t border-slate-800 pt-8 text-center text-slate-400">
           <p>&copy; {new Date().getFullYear()} {company.name} Все права защищены.</p>
-          <p>
-            <a 
-              href="https://max.ru/u/f9LHodD0cOIrknUlAYx1LxuVyfuHRhIq-OHhkpPMbwJ_WcjW4dhTFpEEez0" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 transition-colors underline"
-            >
-              Хочу такой бот!
-            </a>
-          </p>
         </div>
       </div>
     </div>

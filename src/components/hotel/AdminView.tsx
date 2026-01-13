@@ -7,8 +7,6 @@ import ChatStatsCard from './ChatStatsCard';
 import PageSettingsCard from './PageSettingsCard';
 import WidgetSettingsCard from './WidgetSettingsCard';
 import AiSettingsCard from './AiSettingsCard';
-import QualityGateStatsCard from './QualityGateStatsCard';
-import RagDebugInfoCard from './RagDebugInfoCard';
 import SubscriptionWidget from './SubscriptionWidget';
 import YooKassaSettingsCard from './YooKassaSettingsCard';
 import { DocumentStatsCards } from './DocumentStatsCards';
@@ -128,10 +126,6 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
       {!isSuperAdmin() && <PageSettingsCard />}
 
       <ChatStatsCard />
-
-      <QualityGateStatsCard />
-
-      <RagDebugInfoCard />
     </div>
   );
 };
