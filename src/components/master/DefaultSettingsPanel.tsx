@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -77,8 +78,23 @@ const DefaultSettingsPanel = () => {
 
   const settingLabels: { [key: string]: string } = {
     'default_system_prompt': 'Дефолтный системный промпт',
-    'email_template_welcome': 'Шаблон письма приветствия'
+    'email_template_welcome': 'Шаблон письма приветствия',
+    'smtp_host': 'SMTP сервер',
+    'smtp_port': 'SMTP порт',
+    'smtp_user': 'SMTP пользователь (email)',
+    'smtp_password': 'SMTP пароль приложения'
   };
+
+  const settingCategories: { [key: string]: string } = {
+    'default_system_prompt': 'prompts',
+    'email_template_welcome': 'prompts',
+    'smtp_host': 'smtp',
+    'smtp_port': 'smtp',
+    'smtp_user': 'smtp',
+    'smtp_password': 'smtp'
+  };
+
+  const isSmallInput = (key: string) => ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password'].includes(key);
 
   if (isLoading) {
     return (
@@ -97,31 +113,82 @@ const DefaultSettingsPanel = () => {
         </p>
       </div>
 
-      {Object.keys(settings).map(key => (
-        <Card key={key}>
+      <div>
+        <h3 className="text-xl font-semibold mb-4">📝 Промпты и шаблоны</h3>
+        <div className="space-y-6">
+          {Object.keys(settings).filter(key => settingCategories[key] === 'prompts').map(key => (
+            <Card key={key}>
+              <CardHeader>
+                <CardTitle>{settingLabels[key] || key}</CardTitle>
+                <CardDescription>{settings[key].description}</CardDescription>
+                {settings[key].updated_at && (
+                  <p className="text-xs text-muted-foreground">
+                    Обновлено: {new Date(settings[key].updated_at).toLocaleString('ru-RU')}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor={key}>Значение</Label>
+                  <Textarea
+                    id={key}
+                    value={editedSettings[key] || ''}
+                    onChange={(e) => setEditedSettings({ ...editedSettings, [key]: e.target.value })}
+                    rows={key === 'default_system_prompt' ? 15 : 8}
+                    className="font-mono text-sm"
+                  />
+                </div>
+                <Button
+                  onClick={() => handleSave(key)}
+                  disabled={isSaving || editedSettings[key] === settings[key].value}
+                >
+                  {isSaving ? (
+                    <>
+                      <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                      Сохранение...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Save" className="mr-2" size={16} />
+                      Сохранить
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-xl font-semibold mb-4">📧 SMTP настройки</h3>
+        <Card>
           <CardHeader>
-            <CardTitle>{settingLabels[key] || key}</CardTitle>
-            <CardDescription>{settings[key].description}</CardDescription>
-            {settings[key].updated_at && (
-              <p className="text-xs text-muted-foreground">
-                Обновлено: {new Date(settings[key].updated_at).toLocaleString('ru-RU')}
-              </p>
-            )}
+            <CardTitle>Email для отправки писем</CardTitle>
+            <CardDescription>
+              Настройте SMTP для автоматической отправки паролей новым пользователям
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor={key}>Значение</Label>
-              <Textarea
-                id={key}
-                value={editedSettings[key] || ''}
-                onChange={(e) => setEditedSettings({ ...editedSettings, [key]: e.target.value })}
-                rows={key === 'default_system_prompt' ? 15 : 8}
-                className="font-mono text-sm"
-              />
-            </div>
+            {Object.keys(settings).filter(key => settingCategories[key] === 'smtp').map(key => (
+              <div key={key}>
+                <Label htmlFor={key}>{settingLabels[key] || key}</Label>
+                <Input
+                  id={key}
+                  type={key === 'smtp_password' ? 'password' : key === 'smtp_port' ? 'number' : 'text'}
+                  value={editedSettings[key] || ''}
+                  onChange={(e) => setEditedSettings({ ...editedSettings, [key]: e.target.value })}
+                  placeholder={key === 'smtp_host' ? 'smtp.yandex.ru' : key === 'smtp_port' ? '465' : ''}
+                  className="font-mono"
+                />
+              </div>
+            ))}
             <Button
-              onClick={() => handleSave(key)}
-              disabled={isSaving || editedSettings[key] === settings[key].value}
+              onClick={() => {
+                ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_password'].forEach(key => handleSave(key));
+              }}
+              disabled={isSaving}
+              className="w-full"
             >
               {isSaving ? (
                 <>
@@ -131,13 +198,13 @@ const DefaultSettingsPanel = () => {
               ) : (
                 <>
                   <Icon name="Save" className="mr-2" size={16} />
-                  Сохранить
+                  Сохранить SMTP настройки
                 </>
               )}
             </Button>
           </CardContent>
         </Card>
-      ))}
+      </div>
     </div>
   );
 };

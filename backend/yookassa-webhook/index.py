@@ -1,6 +1,12 @@
 import json
 import os
 import psycopg2
+import hashlib
+import secrets
+import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
 def handler(event: dict, context) -> dict:
@@ -58,6 +64,61 @@ def handler(event: dict, context) -> dict:
         """, (payment_id, status, amount, description, event_type, datetime.utcnow()))
 
         conn.commit()
+        
+        # Если платеж успешный и это новое событие (succeeded), создаем тенант и пользователя
+        if status == 'succeeded' and event_type == 'payment.succeeded':
+            # Извлекаем данные из metadata платежа
+            metadata = payment_object.get('metadata', {})
+            tenant_name = metadata.get('tenant_name', description or 'New Tenant')
+            tenant_slug = metadata.get('tenant_slug', f"tenant-{payment_id[:8]}")
+            owner_email = metadata.get('owner_email')
+            owner_phone = metadata.get('owner_phone', '')
+            
+            if owner_email:
+                # Создаем тенант
+                cur.execute("""
+                    INSERT INTO t_p56134400_telegram_ai_bot_pdf.tenants 
+                    (slug, name, description, owner_email, owner_phone, template_version, auto_update, status)
+                    VALUES (%s, %s, %s, %s, %s, '1.0.0', false, 'active')
+                    RETURNING id
+                """, (tenant_slug, tenant_name, f'Создан после оплаты {payment_id}', owner_email, owner_phone))
+                
+                tenant_id = cur.fetchone()[0]
+                
+                # Создаем настройки для тенанта
+                cur.execute("""
+                    INSERT INTO t_p56134400_telegram_ai_bot_pdf.tenant_settings (tenant_id)
+                    VALUES (%s)
+                """, (tenant_id,))
+                
+                # Создаем пользователя
+                username = f"{tenant_slug}_user"
+                password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+                password_hash = hashlib.sha256(password.encode()).hexdigest()
+                
+                cur.execute("""
+                    INSERT INTO t_p56134400_telegram_ai_bot_pdf.admin_users 
+                    (username, password_hash, email, role, tenant_id, is_active)
+                    VALUES (%s, %s, %s, 'content_editor', %s, true)
+                    RETURNING id
+                """, (username, password_hash, owner_email, tenant_id))
+                
+                user_id = cur.fetchone()[0]
+                
+                # Обновляем запись платежа с tenant_id
+                cur.execute(f"""
+                    UPDATE {schema}.payments 
+                    SET description = description || ' | Tenant ID: ' || %s
+                    WHERE payment_id = %s
+                """, (tenant_id, payment_id))
+                
+                conn.commit()
+                
+                # Отправляем email с доступами
+                email_sent = send_welcome_email(owner_email, username, password, tenant_id, cur)
+                
+                print(f'Tenant {tenant_id} and user {user_id} created for payment {payment_id}. Email sent: {email_sent}')
+        
         cur.close()
         conn.close()
 
@@ -78,3 +139,50 @@ def handler(event: dict, context) -> dict:
             'body': json.dumps({'error': str(e)}),
             'isBase64Encoded': False
         }
+
+def send_welcome_email(to_email: str, username: str, password: str, tenant_id: int, cur) -> bool:
+    """Отправка email с доступами после оплаты"""
+    try:
+        # Получаем SMTP настройки и шаблон
+        cur.execute("""
+            SELECT setting_key, setting_value 
+            FROM t_p56134400_telegram_ai_bot_pdf.default_settings
+            WHERE setting_key IN ('smtp_host', 'smtp_port', 'smtp_user', 'smtp_password', 'email_template_welcome')
+        """)
+        settings_rows = cur.fetchall()
+        settings = {row[0]: row[1] for row in settings_rows}
+        
+        smtp_host = settings.get('smtp_host', '').strip()
+        smtp_port = int(settings.get('smtp_port', 465))
+        smtp_user = settings.get('smtp_user', '').strip()
+        smtp_password = settings.get('smtp_password', '').strip()
+        email_template = settings.get('email_template_welcome', 'Здравствуйте!\n\nВаш логин: {username}\nВаш пароль: {password}')
+        
+        if not all([smtp_host, smtp_user, smtp_password]):
+            print('SMTP настройки не полностью заполнены')
+            return False
+        
+        login_url = f"https://your-domain.com/content-editor?tenant_id={tenant_id}"
+        email_body = email_template.format(username=username, password=password, login_url=login_url)
+        
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = to_email
+        msg['Subject'] = 'Доступ к AI-консьержу - оплата подтверждена'
+        msg.attach(MIMEText(email_body, 'plain', 'utf-8'))
+        
+        if smtp_port == 465:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port)
+            server.starttls()
+        
+        server.login(smtp_user, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        print(f'Welcome email успешно отправлен на {to_email}')
+        return True
+    except Exception as e:
+        print(f'Ошибка отправки welcome email: {str(e)}')
+        return False

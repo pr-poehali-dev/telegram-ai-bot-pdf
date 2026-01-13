@@ -344,15 +344,30 @@ def handle_public_content(method, event, cur, conn):
         return {'statusCode': 200, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'success': True}), 'isBase64Encoded': False}
 
 def send_email(to_email: str, subject: str, body: str) -> bool:
-    """Отправка email через SMTP"""
+    """Отправка email через SMTP (настройки из БД)"""
     try:
-        smtp_host = os.environ.get('SMTP_HOST')
-        smtp_port = int(os.environ.get('SMTP_PORT', 465))
-        smtp_user = os.environ.get('SMTP_USER')
-        smtp_password = os.environ.get('SMTP_PASSWORD')
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cur = conn.cursor()
+        
+        # Получаем SMTP настройки из БД
+        cur.execute("""
+            SELECT setting_key, setting_value 
+            FROM t_p56134400_telegram_ai_bot_pdf.default_settings
+            WHERE setting_key IN ('smtp_host', 'smtp_port', 'smtp_user', 'smtp_password')
+        """)
+        settings_rows = cur.fetchall()
+        settings = {row[0]: row[1] for row in settings_rows}
+        
+        cur.close()
+        conn.close()
+        
+        smtp_host = settings.get('smtp_host', '').strip()
+        smtp_port = int(settings.get('smtp_port', 465))
+        smtp_user = settings.get('smtp_user', '').strip()
+        smtp_password = settings.get('smtp_password', '').strip()
         
         if not all([smtp_host, smtp_user, smtp_password]):
-            print('SMTP настройки не полностью заполнены')
+            print('SMTP настройки не полностью заполнены в БД')
             return False
         
         msg = MIMEMultipart()
