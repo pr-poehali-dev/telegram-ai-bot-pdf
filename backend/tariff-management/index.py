@@ -22,12 +22,45 @@ def handler(event: dict, context) -> dict:
 
     try:
         # Проверка авторизации суперадмина
-        auth_header = event.get('headers', {}).get('X-Authorization', '')
-        if not auth_header.startswith('Bearer '):
+        headers = event.get('headers', {})
+        auth_header = headers.get('X-Authorization') or headers.get('Authorization') or headers.get('authorization') or ''
+        
+        if not auth_header or not auth_header.startswith('Bearer '):
             return {
                 'statusCode': 401,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Unauthorized'}),
+                'body': json.dumps({'error': 'Unauthorized: No valid token'}),
+                'isBase64Encoded': False
+            }
+        
+        # Проверяем роль пользователя из JWT токена
+        import jwt
+        token = auth_header.replace('Bearer ', '')
+        jwt_secret = os.environ.get('JWT_SECRET', 'default-jwt-secret-change-in-production')
+        
+        try:
+            payload = jwt.decode(token, jwt_secret, algorithms=['HS256'])
+            user_role = payload.get('role')
+            
+            if user_role != 'super_admin':
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Forbidden: Super admin access required'}),
+                    'isBase64Encoded': False
+                }
+        except jwt.ExpiredSignatureError:
+            return {
+                'statusCode': 401,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'Token expired'}),
+                'isBase64Encoded': False
+            }
+        except jwt.InvalidTokenError:
+            return {
+                'statusCode': 401,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'Invalid token'}),
                 'isBase64Encoded': False
             }
 
