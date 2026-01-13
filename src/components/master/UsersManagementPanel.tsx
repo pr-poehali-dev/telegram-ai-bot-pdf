@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import { UsersManagementHeader } from './UsersManagementHeader';
+import { UserCard } from './UserCard';
+import { ExtendSubscriptionDialog } from './ExtendSubscriptionDialog';
+import { PaymentHistoryDialog } from './PaymentHistoryDialog';
 
 const BACKEND_URL = 'https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8';
 const CHECK_SUBSCRIPTIONS_URL = 'https://functions.poehali.dev/2b45e5d6-8138-4bae-9236-237fe424ef95';
@@ -66,12 +64,10 @@ const UsersManagementPanel = () => {
   useEffect(() => {
     let result = users;
 
-    // Фильтр по статусу
     if (statusFilter !== 'all') {
       result = result.filter(user => user.subscription_status === statusFilter);
     }
 
-    // Поиск по имени, email, slug
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(user =>
@@ -189,14 +185,6 @@ const UsersManagementPanel = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Icon name="Loader2" className="animate-spin" size={24} />
-      </div>
-    );
-  }
-
   const handleCheckSubscriptions = async () => {
     setIsCheckingSubscriptions(true);
     try {
@@ -277,298 +265,92 @@ const UsersManagementPanel = () => {
     }
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+  };
+
+  const handleShowExtendDialog = (tenantId: number, tenantName: string) => {
+    setSelectedTenant(tenantId);
+    setSelectedTenantName(tenantName);
+    setShowExtendDialog(true);
+  };
+
+  const handleShowPaymentHistory = (tenantId: number, tenantName: string) => {
+    setSelectedTenant(tenantId);
+    setSelectedTenantName(tenantName);
+    setShowPaymentHistory(true);
+    loadPaymentHistory(tenantId);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Icon name="Loader2" className="animate-spin" size={24} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Управление пользователями</h2>
-          <p className="text-muted-foreground">
-            Пользователи, созданные после оплаты подписки ({filteredUsers.length} из {users.length})
+      <UsersManagementHeader
+        filteredCount={filteredUsers.length}
+        totalCount={users.length}
+        searchQuery={searchQuery}
+        statusFilter={statusFilter}
+        onSearchChange={setSearchQuery}
+        onStatusFilterChange={setStatusFilter}
+        onResetFilters={handleResetFilters}
+        cronjobStatus={cronjobStatus}
+        isLoadingCronjob={isLoadingCronjob}
+        isCheckingSubscriptions={isCheckingSubscriptions}
+        onSetupCronjob={handleSetupCronjob}
+        onStopCronjob={handleStopCronjob}
+        onCheckSubscriptions={handleCheckSubscriptions}
+      />
+
+      {filteredUsers.length === 0 ? (
+        <div className="text-center py-12">
+          <Icon name="Users" className="mx-auto mb-4 text-muted-foreground" size={48} />
+          <h3 className="text-lg font-semibold mb-2">Пользователи не найдены</h3>
+          <p className="text-muted-foreground mb-4">
+            {searchQuery || statusFilter !== 'all'
+              ? 'Попробуйте изменить фильтры поиска'
+              : 'Пользователи появятся после первой оплаты'}
           </p>
         </div>
-        <div className="flex gap-2">
-          {cronjobStatus?.exists ? (
-            <Button 
-              onClick={handleStopCronjob} 
-              disabled={isLoadingCronjob}
-              variant="destructive"
-            >
-              {isLoadingCronjob ? (
-                <>
-                  <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
-                  Остановка...
-                </>
-              ) : (
-                <>
-                  <Icon name="StopCircle" className="mr-2" size={16} />
-                  Остановить автопроверку
-                </>
-              )}
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleSetupCronjob} 
-              disabled={isLoadingCronjob}
-              variant="default"
-            >
-              {isLoadingCronjob ? (
-                <>
-                  <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
-                  Настройка...
-                </>
-              ) : (
-                <>
-                  <Icon name="Settings" className="mr-2" size={16} />
-                  Настроить автопроверку
-                </>
-              )}
-            </Button>
-          )}
-          <Button 
-            onClick={handleCheckSubscriptions} 
-            disabled={isCheckingSubscriptions}
-            variant="outline"
-          >
-            {isCheckingSubscriptions ? (
-              <>
-                <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
-                Проверка...
-              </>
-            ) : (
-              <>
-                <Icon name="Clock" className="mr-2" size={16} />
-                Проверить сейчас
-              </>
-            )}
-          </Button>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredUsers.map((user) => (
+            <UserCard
+              key={user.id}
+              user={user}
+              onToggleUserStatus={toggleUserStatus}
+              onToggleTenantPublic={toggleTenantPublic}
+              onExtendSubscription={handleShowExtendDialog}
+              onShowPaymentHistory={handleShowPaymentHistory}
+              getStatusBadge={getStatusBadge}
+            />
+          ))}
         </div>
-      </div>
+      )}
 
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="md:col-span-2">
-          <Input
-            placeholder="Поиск по имени, email, логину..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          >
-            <option value="all">Все статусы</option>
-            <option value="active">Активные</option>
-            <option value="expired">Истекшие</option>
-            <option value="cancelled">Отмененные</option>
-          </select>
-        </div>
-      </div>
+      <ExtendSubscriptionDialog
+        open={showExtendDialog}
+        tenantName={selectedTenantName}
+        extendMonths={extendMonths}
+        onOpenChange={setShowExtendDialog}
+        onMonthsChange={setExtendMonths}
+        onConfirm={handleExtendSubscription}
+      />
 
-      <div className="space-y-4">
-        {users.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Icon name="Users" size={48} className="mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Пока нет пользователей</p>
-            </CardContent>
-          </Card>
-        ) : filteredUsers.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Icon name="Search" size={48} className="mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Ничего не найдено</p>
-              <Button variant="link" onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}>
-                Сбросить фильтры
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredUsers.map((user) => (
-            <Card key={user.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      {user.tenant_name}
-                      {!user.is_active && (
-                        <Badge variant="secondary">Неактивен</Badge>
-                      )}
-                    </CardTitle>
-                    <CardDescription>
-                      @{user.tenant_slug} • {user.email}
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    {getStatusBadge(user.subscription_status)}
-                    {user.tariff_id && (
-                      <Badge variant="outline">{user.tariff_id}</Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Логин:</span>
-                    <p className="font-mono">{user.username}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Роль:</span>
-                    <p>{user.role === 'content_editor' ? 'Редактор контента' : user.role}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Создан:</span>
-                    <p>{new Date(user.created_at).toLocaleString('ru-RU')}</p>
-                  </div>
-                  {user.subscription_end_date && (
-                    <div>
-                      <span className="text-muted-foreground">Подписка до:</span>
-                      <p>{new Date(user.subscription_end_date).toLocaleDateString('ru-RU')}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={user.is_active}
-                        onCheckedChange={(checked) => toggleUserStatus(user.id, checked)}
-                      />
-                      <span className="text-sm">Пользователь активен</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={user.is_public}
-                        onCheckedChange={(checked) => toggleTenantPublic(user.tenant_id, checked)}
-                      />
-                      <span className="text-sm">Публичный доступ</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedTenant(user.tenant_id);
-                        setSelectedTenantName(user.tenant_name);
-                        setShowExtendDialog(true);
-                      }}
-                    >
-                      <Icon name="CalendarPlus" className="mr-2" size={16} />
-                      Продлить подписку
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedTenant(user.tenant_id);
-                        setSelectedTenantName(user.tenant_name);
-                        setShowPaymentHistory(true);
-                        loadPaymentHistory(user.tenant_id);
-                      }}
-                    >
-                      <Icon name="CreditCard" className="mr-2" size={16} />
-                      История платежей
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-
-      <Dialog open={showExtendDialog} onOpenChange={setShowExtendDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Продлить подписку</DialogTitle>
-            <DialogDescription>
-              {selectedTenantName} — Бесплатное продление администратором
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="months">Количество месяцев</Label>
-              <Input
-                id="months"
-                type="number"
-                min="1"
-                max="24"
-                value={extendMonths}
-                onChange={(e) => setExtendMonths(parseInt(e.target.value) || 1)}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Подписка будет продлена на {extendMonths} мес. ({extendMonths * 30} дней)
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleExtendSubscription} className="flex-1">
-                <Icon name="Check" className="mr-2" size={16} />
-                Продлить бесплатно
-              </Button>
-              <Button variant="outline" onClick={() => setShowExtendDialog(false)}>
-                Отмена
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showPaymentHistory} onOpenChange={setShowPaymentHistory}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>История платежей</DialogTitle>
-            <DialogDescription>
-              {selectedTenantName} — Все платежи по подписке
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            {isLoadingHistory ? (
-              <div className="flex items-center justify-center p-8">
-                <Icon name="Loader2" className="animate-spin" size={24} />
-              </div>
-            ) : paymentHistory.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Icon name="CreditCard" size={48} className="mx-auto mb-4 opacity-50" />
-                <p>Пока нет платежей</p>
-              </div>
-            ) : (
-              paymentHistory.map((payment) => (
-                <Card key={payment.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant={payment.status === 'succeeded' ? 'default' : 'secondary'}>
-                            {payment.status === 'succeeded' ? 'Успешно' : payment.status}
-                          </Badge>
-                          <Badge variant="outline">
-                            {payment.payment_type === 'initial' ? 'Первый платеж' : 'Продление'}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          ID: {payment.payment_id}
-                        </p>
-                        <p className="text-sm">
-                          Тариф: <span className="font-medium">{payment.tariff_name}</span>
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">{payment.amount.toLocaleString('ru-RU')} ₽</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(payment.created_at).toLocaleString('ru-RU')}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PaymentHistoryDialog
+        open={showPaymentHistory}
+        tenantName={selectedTenantName}
+        payments={paymentHistory}
+        isLoading={isLoadingHistory}
+        onOpenChange={setShowPaymentHistory}
+      />
     </div>
   );
 };
