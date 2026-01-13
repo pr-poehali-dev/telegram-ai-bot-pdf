@@ -97,11 +97,12 @@ def handler(event: dict, context) -> dict:
                         'isBase64Encoded': False
                     }
 
-        # Ищем пользователя в базе
+        # Ищем пользователя в базе и получаем tariff_id из tenants
         cur.execute("""
-            SELECT id, username, password_hash, role, tenant_id, is_active
-            FROM t_p56134400_telegram_ai_bot_pdf.admin_users
-            WHERE username = %s AND is_active = true
+            SELECT u.id, u.username, u.password_hash, u.role, u.tenant_id, u.is_active, t.tariff_id
+            FROM t_p56134400_telegram_ai_bot_pdf.admin_users u
+            LEFT JOIN t_p56134400_telegram_ai_bot_pdf.tenants t ON u.tenant_id = t.id
+            WHERE u.username = %s AND u.is_active = true
         """, (username,))
         
         user_row = cur.fetchone()
@@ -122,7 +123,7 @@ def handler(event: dict, context) -> dict:
                 'isBase64Encoded': False
             }
         
-        user_id, username_db, password_hash_db, role, tenant_id, is_active = user_row
+        user_id, username_db, password_hash_db, role, tenant_id, is_active, tariff_id = user_row
         password_hash = hashlib.sha256(password.encode()).hexdigest()
 
         if password_hash == password_hash_db:
@@ -163,7 +164,8 @@ def handler(event: dict, context) -> dict:
                         'id': user_id,
                         'username': username_db,
                         'role': role,
-                        'tenant_id': tenant_id
+                        'tenant_id': tenant_id,
+                        'tariff_id': tariff_id
                     }
                 }),
                 'isBase64Encoded': False
