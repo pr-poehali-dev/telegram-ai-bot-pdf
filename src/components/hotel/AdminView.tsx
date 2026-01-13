@@ -12,7 +12,7 @@ import YooKassaSettingsCard from './YooKassaSettingsCard';
 import { DocumentStatsCards } from './DocumentStatsCards';
 import { DocumentsPanel } from './DocumentsPanel';
 import { Document, BACKEND_URLS } from './types';
-import { getTenantId, getTariffId, isSuperAdmin } from '@/lib/auth';
+import { getTenantId, getTariffId, isSuperAdmin, getAdminUser } from '@/lib/auth';
 import { hasFeatureAccess } from '@/lib/tariff-limits';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
@@ -28,6 +28,7 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
   const tenantId = getTenantId();
   const tariffId = getTariffId();
   const superAdmin = isSuperAdmin();
+  const currentUser = getAdminUser();
 
   const UpgradeCard = ({ feature }: { feature: string }) => (
     <Card className="border-amber-500 bg-amber-50">
@@ -52,14 +53,26 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {superAdmin && (
-        <Card className="border-purple-500 bg-purple-50">
+      {currentUser && (
+        <Card className={superAdmin ? "border-purple-500 bg-purple-50" : "border-blue-500 bg-blue-50"}>
           <CardContent className="py-4">
             <div className="flex items-center gap-2">
-              <Icon name="ShieldCheck" size={20} className="text-purple-600" />
-              <span className="font-semibold text-purple-900">Режим суперадмина</span>
-              <span className="text-sm text-purple-700">• Tenant ID: {tenantId}</span>
-              <span className="text-sm text-purple-700">• Tariff: {tariffId || 'не установлен'}</span>
+              <Icon name={superAdmin ? "ShieldCheck" : "User"} size={20} className={superAdmin ? "text-purple-600" : "text-blue-600"} />
+              <span className={`font-semibold ${superAdmin ? "text-purple-900" : "text-blue-900"}`}>
+                {superAdmin ? "Режим суперадмина" : "Админ-панель"}
+              </span>
+              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                • Логин: {currentUser.username}
+              </span>
+              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                • Роль: {currentUser.role === 'super_admin' ? 'Суперадмин' : 'Админ пары'}
+              </span>
+              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                • Tenant ID: {tenantId}
+              </span>
+              <span className={`text-sm ${superAdmin ? "text-purple-700" : "text-blue-700"}`}>
+                • Tariff: {tariffId || 'не установлен'}
+              </span>
             </div>
           </CardContent>
         </Card>
