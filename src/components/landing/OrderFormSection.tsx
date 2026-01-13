@@ -80,16 +80,25 @@ export const OrderFormSection = ({ selectedTariff }: OrderFormSectionProps) => {
   };
 
   return (
-    <div id="order-form" className="container mx-auto px-4 py-16">
-      <div className="max-w-2xl mx-auto">
-        <Card className="shadow-2xl">
-          <CardContent className="pt-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2 text-center">
-              Заказать AI-консультанта
+    <div id="order-form" className="bg-gradient-to-b from-white to-slate-50 py-20">
+      <div className="container mx-auto px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-block mb-4 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+              <p className="text-sm font-semibold text-green-700 flex items-center gap-2">
+                <Icon name="Zap" size={16} />
+                Запуск за 24 часа после оплаты
+              </p>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+              Начните увеличивать продажи уже завтра
             </h2>
-            <p className="text-slate-600 mb-8 text-center">
-              Заполните форму и перейдите к оплате
+            <p className="text-xl text-slate-600">
+              Заполните форму → Оплатите → Получите AI-консультанта
             </p>
+          </div>
+          <Card className="shadow-2xl border-2 border-primary/20">
+            <CardContent className="pt-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -159,25 +168,50 @@ export const OrderFormSection = ({ selectedTariff }: OrderFormSectionProps) => {
                   {error}
                 </div>
               )}
-              <Button type="submit" size="lg" className="w-full text-lg" disabled={isLoading}>
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <Icon name="Info" size={20} className="text-primary mt-1 flex-shrink-0" />
+                  <div className="text-sm text-slate-700">
+                    <p className="font-semibold mb-1">Что будет дальше:</p>
+                    <ul className="space-y-1 list-disc list-inside">
+                      <li>Оплатите выбранный тариф</li>
+                      <li>Мы свяжемся с вами в течение 2 часов</li>
+                      <li>Настроим AI-консультанта за 24 часа</li>
+                      <li>Вы получите готовое решение и инструкции</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <Button type="submit" size="lg" className="w-full text-xl py-7 shadow-xl" disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Icon name="Loader2" className="mr-2 animate-spin" size={20} />
+                    <Icon name="Loader2" className="mr-2 animate-spin" size={24} />
                     Переход к оплате...
                   </>
                 ) : (
                   <>
-                    <Icon name="CreditCard" className="mr-2" size={20} />
-                    Перейти к оплате {tariffs[formData.tariff as keyof typeof tariffs].price.toLocaleString('ru-RU')} ₽
+                    <Icon name="Rocket" className="mr-2" size={24} />
+                    Запустить за {tariffs[formData.tariff as keyof typeof tariffs].price.toLocaleString('ru-RU')} ₽
                   </>
                 )}
               </Button>
+              <div className="flex items-center justify-center gap-6 text-sm text-slate-600 pt-4 border-t">
+                <div className="flex items-center gap-2">
+                  <Icon name="ShieldCheck" size={16} className="text-green-600" />
+                  <span>Защищённый платёж</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon name="Lock" size={16} className="text-green-600" />
+                  <span>Соответствие 152-ФЗ</span>
+                </div>
+              </div>
               <p className="text-xs text-slate-500 text-center">
                 Нажимая кнопку, вы соглашаетесь с политикой обработки персональных данных
               </p>
             </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

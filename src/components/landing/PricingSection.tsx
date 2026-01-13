@@ -8,22 +8,29 @@ interface PricingSectionProps {
 
 export const PricingSection = ({ onPlanSelect }: PricingSectionProps) => {
   return (
-    <div className="bg-slate-50 py-16">
+    <div id="pricing" className="bg-slate-50 py-20">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
-          Тарифы
+        <h2 className="text-3xl md:text-5xl font-bold text-center text-slate-900 mb-4">
+          Выберите свой тариф
         </h2>
+        <p className="text-xl text-slate-600 text-center mb-12 max-w-3xl mx-auto">
+          Начните с маленького, растите без ограничений. Первый месяц — полная настройка, дальше — только поддержка
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <Card className="hover:shadow-xl transition-shadow">
+          <Card className="hover:shadow-xl transition-all hover:-translate-y-1">
             <CardContent className="pt-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Старт</h3>
-              <p className="text-slate-600 mb-4">Для небольших проектов</p>
+              <div className="bg-blue-50 inline-block px-3 py-1 rounded-full mb-3">
+                <span className="text-xs font-semibold text-primary">Лучшее для старта</span>
+              </div>
+              <h3 className="text-3xl font-bold text-slate-900 mb-2">Старт</h3>
+              <p className="text-slate-600 mb-4">Для малого бизнеса</p>
               <div className="mb-6">
-                <div>
-                  <span className="text-4xl font-bold text-slate-900">9 975₽</span>
-                  <span className="text-slate-600">/мес</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-slate-900">9 975</span>
+                  <span className="text-2xl text-slate-600">₽</span>
                 </div>
-                <div className="text-sm text-slate-500 mt-1">продление 1 975₽/мес</div>
+                <div className="text-sm text-slate-500">первый месяц с настройкой</div>
+                <div className="text-lg font-semibold text-green-600 mt-1">дальше 1 975₽/мес</div>
               </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
@@ -53,21 +60,20 @@ export const PricingSection = ({ onPlanSelect }: PricingSectionProps) => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-xl transition-shadow border-2 border-primary">
-            <CardContent className="pt-8">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-2xl font-bold text-slate-900">Бизнес</h3>
-                <span className="text-xs px-2 py-1 bg-primary text-white rounded">
-                  Популярный
-                </span>
-              </div>
+          <Card className="hover:shadow-2xl transition-all hover:-translate-y-2 border-2 border-primary relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-gradient-to-l from-primary to-blue-600 text-white px-6 py-2 text-sm font-bold">
+              ⭐ САМЫЙ ПОПУЛЯРНЫЙ
+            </div>
+            <CardContent className="pt-12">
+              <h3 className="text-3xl font-bold text-slate-900 mb-2">Бизнес</h3>
               <p className="text-slate-600 mb-4">Для растущих компаний</p>
               <div className="mb-6">
-                <div>
-                  <span className="text-4xl font-bold text-slate-900">19 975₽</span>
-                  <span className="text-slate-600">/мес</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">19 975</span>
+                  <span className="text-2xl text-slate-600">₽</span>
                 </div>
-                <div className="text-sm text-slate-500 mt-1">продление 4 975₽/мес</div>
+                <div className="text-sm text-slate-500">первый месяц с настройкой</div>
+                <div className="text-lg font-semibold text-green-600 mt-1">дальше 4 975₽/мес</div>
               </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
@@ -97,16 +103,20 @@ export const PricingSection = ({ onPlanSelect }: PricingSectionProps) => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-xl transition-shadow">
+          <Card className="hover:shadow-xl transition-all hover:-translate-y-1 border-2 border-purple-300">
             <CardContent className="pt-8">
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Премиум</h3>
+              <div className="bg-gradient-to-r from-purple-100 to-pink-100 inline-block px-3 py-1 rounded-full mb-3">
+                <span className="text-xs font-semibold text-purple-700">Максимум возможностей</span>
+              </div>
+              <h3 className="text-3xl font-bold text-slate-900 mb-2">Премиум</h3>
               <p className="text-slate-600 mb-4">Для крупного бизнеса</p>
               <div className="mb-6">
-                <div>
-                  <span className="text-4xl font-bold text-slate-900">49 975₽</span>
-                  <span className="text-slate-600">/мес</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-slate-900">49 975</span>
+                  <span className="text-2xl text-slate-600">₽</span>
                 </div>
-                <div className="text-sm text-slate-500 mt-1">продление 14 975₽/мес</div>
+                <div className="text-sm text-slate-500">первый месяц с настройкой</div>
+                <div className="text-lg font-semibold text-green-600 mt-1">дальше 14 975₽/мес</div>
               </div>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
