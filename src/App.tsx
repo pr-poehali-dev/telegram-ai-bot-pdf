@@ -12,6 +12,8 @@ import ContentEditor from "./pages/ContentEditor";
 import PaymentPage from "./pages/PaymentPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import SuperAdmin from "./pages/SuperAdmin";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/master-admin" element={<MasterAdminView />} />
           <Route path="/super-admin" element={<SuperAdmin />} />
           <Route path="/content-editor" element={<ContentEditor />} />

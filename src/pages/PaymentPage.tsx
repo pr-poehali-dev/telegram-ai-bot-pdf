@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
@@ -29,6 +31,8 @@ const PaymentPage = () => {
     owner_email: '',
     owner_phone: ''
   });
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingTariffs, setIsLoadingTariffs] = useState(true);
   const { toast} = useToast();
@@ -63,6 +67,15 @@ const PaymentPage = () => {
       toast({
         title: 'Ошибка',
         description: 'Заполните обязательные поля',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!agreedToTerms || !agreedToPrivacy) {
+      toast({
+        title: 'Ошибка',
+        description: 'Необходимо согласие с условиями и политикой конфиденциальности',
         variant: 'destructive'
       });
       return;
@@ -256,15 +269,43 @@ const PaymentPage = () => {
                 />
               </div>
 
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between mb-4">
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-start gap-3">
+                  <Checkbox 
+                    id="agree_privacy" 
+                    checked={agreedToPrivacy}
+                    onCheckedChange={(checked) => setAgreedToPrivacy(checked as boolean)}
+                  />
+                  <Label htmlFor="agree_privacy" className="text-sm leading-relaxed cursor-pointer">
+                    Я согласен(на) на обработку персональных данных в соответствии с{' '}
+                    <Link to="/privacy-policy" target="_blank" className="text-blue-600 hover:underline">
+                      Политикой конфиденциальности
+                    </Link>
+                  </Label>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Checkbox 
+                    id="agree_terms" 
+                    checked={agreedToTerms}
+                    onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                  />
+                  <Label htmlFor="agree_terms" className="text-sm leading-relaxed cursor-pointer">
+                    Я принимаю условия{' '}
+                    <Link to="/terms-of-service" target="_blank" className="text-blue-600 hover:underline">
+                      Пользовательского соглашения
+                    </Link>
+                  </Label>
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
                   <span className="text-lg font-semibold">Итого к оплате:</span>
                   <span className="text-2xl font-bold">
                     {tariffs.find(t => t.id === selectedTariff)?.price.toLocaleString('ru-RU')} ₽
                   </span>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                <Button type="submit" className="w-full" size="lg" disabled={isLoading || !agreedToTerms || !agreedToPrivacy}>
                   {isLoading ? (
                     <>
                       <Icon name="Loader2" className="animate-spin mr-2" size={20} />

@@ -1,4 +1,5 @@
 import Icon from '@/components/ui/icon';
+import { Link } from 'react-router-dom';
 
 export const FooterSection = () => {
   return (
@@ -25,28 +26,25 @@ export const FooterSection = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Документы</h3>
             <div className="space-y-2 text-slate-400">
-              <a href="#" className="block hover:text-white transition-colors">
+              <Link to="/privacy-policy" className="block hover:text-white transition-colors">
                 Политика конфиденциальности
-              </a>
-              <a href="#" className="block hover:text-white transition-colors">
+              </Link>
+              <Link to="/terms-of-service" className="block hover:text-white transition-colors">
                 Пользовательское соглашение
-              </a>
-              <a href="#" className="block hover:text-white transition-colors">
-                Оферта
-              </a>
+              </Link>
             </div>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Реквизиты</h3>
             <div className="space-y-2 text-slate-400">
-              <p>Плательщик НПД</p>
-              <p>Прохоров С. В.</p>
+              <p>ИП Нехорошев Антон Александрович</p>
               <p>ИНН: 910800040469</p>
+              <p>Республика Крым, г. Феодосия</p>
             </div>
           </div>
         </div>
         <div className="border-t border-slate-800 pt-8 text-center text-slate-400">
-          <p>&copy; {new Date().getFullYear()} Прохоров С. В. Все права защищены.</p>
+          <p>&copy; {new Date().getFullYear()} ИП Нехорошев А.А. Все права защищены.</p>
         </div>
       </div>
     </div>
