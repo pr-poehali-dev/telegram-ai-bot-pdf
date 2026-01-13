@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import MasterDashboardStats from './MasterDashboardStats';
@@ -17,6 +13,9 @@ import DefaultSettingsPanel from './DefaultSettingsPanel';
 import CreateTenantWithUserPanel from './CreateTenantWithUserPanel';
 import TariffManagementPanel from './TariffManagementPanel';
 import UsersManagementPanel from './UsersManagementPanel';
+import { CreateTenantDialog, TenantFormData } from './CreateTenantDialog';
+import { CreateVersionDialog, VersionFormData } from './CreateVersionDialog';
+import { BulkUpdateDialog } from './BulkUpdateDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Tenant {
@@ -61,22 +60,6 @@ const MasterAdminView = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { toast } = useToast();
 
-  const [newTenant, setNewTenant] = useState({
-    slug: '',
-    name: '',
-    description: '',
-    owner_email: '',
-    owner_phone: '',
-    auto_update: false
-  });
-
-  const [newVersion, setNewVersion] = useState({
-    version: '',
-    description: ''
-  });
-
-  const [bulkUpdateTarget, setBulkUpdateTarget] = useState('');
-
   useEffect(() => {
     loadTenants();
     loadVersions();
@@ -102,19 +85,18 @@ const MasterAdminView = () => {
     }
   };
 
-  const handleCreateTenant = async () => {
+  const handleCreateTenant = async (tenantData: TenantFormData) => {
     setIsLoading(true);
     try {
       const response = await fetch(BACKEND_URLS.tenants, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTenant)
+        body: JSON.stringify(tenantData)
       });
 
       if (response.ok) {
         toast({ title: 'Успешно', description: 'Тенант создан' });
         setShowCreateDialog(false);
-        setNewTenant({ slug: '', name: '', description: '', owner_email: '', owner_phone: '', auto_update: false });
         loadTenants();
       } else {
         const data = await response.json();
@@ -127,19 +109,18 @@ const MasterAdminView = () => {
     }
   };
 
-  const handleCreateVersion = async () => {
+  const handleCreateVersion = async (versionData: VersionFormData) => {
     setIsLoading(true);
     try {
       const response = await fetch(BACKEND_URLS.versions, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.dumps({ ...newVersion, created_by: 'admin' })
+        body: JSON.stringify({ ...versionData, created_by: 'admin' })
       });
 
       if (response.ok) {
         toast({ title: 'Успешно', description: 'Версия создана' });
         setShowVersionDialog(false);
-        setNewVersion({ version: '', description: '' });
         loadVersions();
       } else {
         const data = await response.json();
@@ -152,8 +133,8 @@ const MasterAdminView = () => {
     }
   };
 
-  const handleBulkUpdate = async () => {
-    if (!bulkUpdateTarget) {
+  const handleBulkUpdate = async (targetVersion: string) => {
+    if (!targetVersion) {
       toast({ title: 'Ошибка', description: 'Выберите версию для обновления', variant: 'destructive' });
       return;
     }
@@ -163,8 +144,8 @@ const MasterAdminView = () => {
       const response = await fetch(BACKEND_URLS.bulkUpdate, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.dumps({
-          target_version: bulkUpdateTarget,
+        body: JSON.stringify({
+          target_version: targetVersion,
           tenant_ids: selectedTenants,
           update_all: selectedTenants.length === 0,
           updated_by: 'admin'
@@ -227,152 +208,91 @@ const MasterAdminView = () => {
                 Новая версия
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Создать версию мастер-шаблона</DialogTitle>
-                <DialogDescription>
-                  Новая версия кода для обновления тенантов
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Версия (например, 1.1.0)</Label>
-                  <Input
-                    value={newVersion.version}
-                    onChange={(e) => setNewVersion({ ...newVersion, version: e.target.value })}
-                    placeholder="1.1.0"
-                  />
-                </div>
-                <div>
-                  <Label>Описание изменений</Label>
-                  <Textarea
-                    value={newVersion.description}
-                    onChange={(e) => setNewVersion({ ...newVersion, description: e.target.value })}
-                    placeholder="Добавлен новый функционал..."
-                  />
-                </div>
-                <Button onClick={handleCreateVersion} disabled={isLoading} className="w-full">
-                  Создать версию
-                </Button>
-              </div>
-            </DialogContent>
           </Dialog>
-
+          <CreateVersionDialog
+            open={showVersionDialog}
+            isLoading={isLoading}
+            onOpenChange={setShowVersionDialog}
+            onSubmit={handleCreateVersion}
+          />
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button>
                 <Icon name="Plus" size={16} className="mr-2" />
-                Создать тенант
+                Новый тенант
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Создать новую пару (админка + чат)</DialogTitle>
-                <DialogDescription>
-                  Новый AI чат-бот для клиента
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Slug (URL-адрес)</Label>
-                  <Input
-                    value={newTenant.slug}
-                    onChange={(e) => setNewTenant({ ...newTenant, slug: e.target.value })}
-                    placeholder="hotel-pushkin"
-                  />
-                </div>
-                <div>
-                  <Label>Название</Label>
-                  <Input
-                    value={newTenant.name}
-                    onChange={(e) => setNewTenant({ ...newTenant, name: e.target.value })}
-                    placeholder="Отель Пушкин"
-                  />
-                </div>
-                <div>
-                  <Label>Описание</Label>
-                  <Textarea
-                    value={newTenant.description}
-                    onChange={(e) => setNewTenant({ ...newTenant, description: e.target.value })}
-                    placeholder="AI-консьерж для отеля"
-                  />
-                </div>
-                <div>
-                  <Label>Email владельца</Label>
-                  <Input
-                    type="email"
-                    value={newTenant.owner_email}
-                    onChange={(e) => setNewTenant({ ...newTenant, owner_email: e.target.value })}
-                    placeholder="owner@example.com"
-                  />
-                </div>
-                <div>
-                  <Label>Телефон владельца</Label>
-                  <Input
-                    value={newTenant.owner_phone}
-                    onChange={(e) => setNewTenant({ ...newTenant, owner_phone: e.target.value })}
-                    placeholder="+7 999 123-45-67"
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="auto_update">Авто-обновление</Label>
-                  <Switch
-                    id="auto_update"
-                    checked={newTenant.auto_update}
-                    onCheckedChange={(checked) => setNewTenant({ ...newTenant, auto_update: checked })}
-                  />
-                </div>
-                <Button onClick={handleCreateTenant} disabled={isLoading} className="w-full">
-                  Создать тенант
-                </Button>
-              </div>
-            </DialogContent>
           </Dialog>
+          <CreateTenantDialog
+            open={showCreateDialog}
+            isLoading={isLoading}
+            onOpenChange={setShowCreateDialog}
+            onSubmit={handleCreateTenant}
+          />
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-4xl grid-cols-6">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="dashboard">Дашборд</TabsTrigger>
-          <TabsTrigger value="users">Пользователи</TabsTrigger>
-          <TabsTrigger value="tariffs">Тарифы</TabsTrigger>
-          <TabsTrigger value="create">Создать пару</TabsTrigger>
+          <TabsTrigger value="tenants">Теnanты</TabsTrigger>
+          <TabsTrigger value="versions">Версии</TabsTrigger>
+          <TabsTrigger value="bulk-update">Массовое обновление</TabsTrigger>
+          <TabsTrigger value="create-with-user">Создать с пользователем</TabsTrigger>
           <TabsTrigger value="settings">Настройки</TabsTrigger>
-          <TabsTrigger value="admins">Админы</TabsTrigger>
+          <TabsTrigger value="admin-users">Админы</TabsTrigger>
+          <TabsTrigger value="tariffs">Тарифы</TabsTrigger>
+          <TabsTrigger value="users">Пользователи</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="dashboard" className="space-y-6">
-          <MasterDashboardStats tenants={tenants} versionsCount={versions.length} />
-          <MessengersStatusCard tenants={tenants} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <VersionsList versions={versions} />
-            <BulkUpdatePanel
-              tenants={tenants}
-              versions={versions}
-              selectedTenants={selectedTenants}
-              bulkUpdateTarget={bulkUpdateTarget}
-              isLoading={isLoading}
-              showBulkUpdateDialog={showBulkUpdateDialog}
-              onToggleSelection={toggleTenantSelection}
-              onSelectAll={selectAll}
-              onDeselectAll={deselectAll}
-              onSetBulkUpdateTarget={setBulkUpdateTarget}
-              onBulkUpdate={handleBulkUpdate}
-              onSetShowDialog={setShowBulkUpdateDialog}
-            />
+
+        <TabsContent value="dashboard">
+          <div className="grid gap-6">
+            <MasterDashboardStats tenants={tenants} />
+            <MessengersStatusCard tenants={tenants} />
           </div>
-          <TenantsListTable tenants={tenants} onUpdate={loadTenants} />
         </TabsContent>
 
-        <TabsContent value="users">
-          <UsersManagementPanel />
+        <TabsContent value="tenants">
+          <TenantsListTable
+            tenants={tenants}
+            selectedTenants={selectedTenants}
+            onToggleSelection={toggleTenantSelection}
+            onSelectAll={selectAll}
+            onDeselectAll={deselectAll}
+            onRefresh={loadTenants}
+          />
         </TabsContent>
 
-        <TabsContent value="tariffs">
-          <TariffManagementPanel />
+        <TabsContent value="versions">
+          <VersionsList versions={versions} onRefresh={loadVersions} />
         </TabsContent>
 
-        <TabsContent value="create">
+        <TabsContent value="bulk-update">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                {selectedTenants.length > 0
+                  ? `Выбрано тенантов: ${selectedTenants.length}`
+                  : 'Не выбрано ни одного тенанта (будут обновлены все)'}
+              </p>
+              <Button onClick={() => setShowBulkUpdateDialog(true)}>
+                <Icon name="RefreshCw" size={16} className="mr-2" />
+                Запустить массовое обновление
+              </Button>
+            </div>
+            <BulkUpdatePanel tenants={tenants} />
+          </div>
+          <BulkUpdateDialog
+            open={showBulkUpdateDialog}
+            isLoading={isLoading}
+            versions={versions}
+            selectedTenantsCount={selectedTenants.length}
+            onOpenChange={setShowBulkUpdateDialog}
+            onSubmit={handleBulkUpdate}
+          />
+        </TabsContent>
+
+        <TabsContent value="create-with-user">
           <CreateTenantWithUserPanel />
         </TabsContent>
 
@@ -380,8 +300,16 @@ const MasterAdminView = () => {
           <DefaultSettingsPanel />
         </TabsContent>
 
-        <TabsContent value="admins">
+        <TabsContent value="admin-users">
           <AdminUsersPanel />
+        </TabsContent>
+
+        <TabsContent value="tariffs">
+          <TariffManagementPanel />
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UsersManagementPanel />
         </TabsContent>
       </Tabs>
     </div>
