@@ -36,8 +36,8 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         
         cur.execute("""
-            SELECT id, name, size_bytes, pages, category, status, uploaded_at, processed_at
-            FROM t_p56134400_telegram_ai_bot_pdf.documents
+            SELECT id, file_name, NULL as size_bytes, pages, category, status, uploaded_at, NULL as processed_at
+            FROM t_p56134400_telegram_ai_bot_pdf.tenant_documents
             WHERE tenant_id = %s
             ORDER BY uploaded_at DESC
         """, (tenant_id,))
