@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { HeroSection } from './HeroSection';
 import { FeaturesSection } from './FeaturesSection';
 import { CasesSection } from './CasesSection';
+import { TestimonialsSection } from './TestimonialsSection';
 import { SecuritySection } from './SecuritySection';
 import { PricingSection } from './PricingSection';
 import { FAQSection } from './FAQSection';
@@ -21,6 +22,7 @@ const LandingPage = () => {
       <HeroSection onOrderClick={() => scrollToForm('basic')} />
       <FeaturesSection />
       <CasesSection />
+      <TestimonialsSection />
       <SecuritySection />
       <PricingSection onPlanSelect={scrollToForm} />
       <FAQSection />
