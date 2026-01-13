@@ -14,7 +14,7 @@ import YooKassaSettingsCard from './YooKassaSettingsCard';
 import { DocumentStatsCards } from './DocumentStatsCards';
 import { DocumentsPanel } from './DocumentsPanel';
 import { Document, BACKEND_URLS } from './types';
-import { getTenantId, getTariffId } from '@/lib/auth';
+import { getTenantId, getTariffId, isSuperAdmin } from '@/lib/auth';
 import { hasFeatureAccess } from '@/lib/tariff-limits';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
@@ -58,6 +58,13 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
       )}
       
       <DocumentStatsCards documents={documents} />
+
+      <DocumentsPanel
+        documents={documents}
+        isLoading={isLoading}
+        onFileUpload={onFileUpload}
+        onDeleteDocument={onDeleteDocument}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {hasFeatureAccess('hasAISettings', tariffId) ? (
@@ -112,32 +119,20 @@ const AdminView = ({ documents, isLoading, onFileUpload, onDeleteDocument }: Adm
 
       <WidgetSettingsCard />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {hasFeatureAccess('hasAdvancedAISettings', tariffId) ? (
+      {isSuperAdmin() && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <AiSettingsCard />
-        ) : (
-          <UpgradeCard feature="Расширенные настройки AI" />
-        )}
-        <PageSettingsCard />
-      </div>
+          <PageSettingsCard />
+        </div>
+      )}
 
-      <YooKassaSettingsCard
-        createPaymentUrl={BACKEND_URLS.yookassaCreatePayment}
-        webhookUrl={BACKEND_URLS.yookassaWebhook}
-      />
+      {!isSuperAdmin() && <PageSettingsCard />}
 
       <ChatStatsCard />
 
       <QualityGateStatsCard />
 
       <RagDebugInfoCard />
-
-      <DocumentsPanel
-        documents={documents}
-        isLoading={isLoading}
-        onFileUpload={onFileUpload}
-        onDeleteDocument={onDeleteDocument}
-      />
     </div>
   );
 };
