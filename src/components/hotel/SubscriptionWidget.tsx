@@ -10,9 +10,10 @@ import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import { isSuperAdmin } from '@/lib/auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import FUNC_URLS from '../../../backend/func2url.json';
 
-const BACKEND_URL = 'https://functions.poehali.dev/2163d682-19a2-462b-b577-7f04219cc3c8';
-const TARIFF_CHANGE_URL = 'https://functions.poehali.dev/9aaca202-0192-4234-9f65-591df1552960';
+const BACKEND_URL = FUNC_URLS['subscription-manager'];
+const TARIFF_CHANGE_URL = FUNC_URLS['tariff-management'];
 
 interface SubscriptionInfo {
   status: string;
